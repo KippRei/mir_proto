@@ -1,0 +1,4 @@
+-start with vocal stem from one song and music minus vocals of another
+-find structure of both
+-match pitch/bpm
+-determine if 

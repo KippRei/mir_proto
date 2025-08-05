@@ -1,0 +1,10 @@
+choco install ffmpeg
+pip install demucs
+pip install librosa
+pip intall Cython
+python -m pip install git+https://github.com/CPJKU/madmom.git
+pip install pydub
+pip install openai-whisper
+
+# demucs usage
+demucs --mp3 twofriends.mp3
