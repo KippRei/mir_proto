@@ -15,6 +15,7 @@ channel4 = pygame.mixer.Channel(3)
 channel1.play(drum_track)
 channel2.play(string_track)
 channel3.play(vocal_track)
+channel4.play(drum_track)
 
 def play_drums():
     if channel1.get_volume() == 0:
@@ -40,6 +41,15 @@ def play_vocals():
         channel3.set_volume(0)
         button3.config(text='Vocals (off)')
 
+def start_drum_hit(e):
+    print(e)
+    channel1.set_volume(0)
+    channel4.play(drum_track)
+
+def stop_drum_hit(e):
+    channel1.set_volume(1)
+    channel4.stop()
+
 a = tk.Tk()
 a.title('InsideOut')
 a.geometry('400x300')
@@ -49,4 +59,8 @@ button2 = tk.Button(a, text='Strings (on)', width=25, pady=20, command=play_stri
 button2.pack()
 button3 = tk.Button(a, text='Vocals (on)', width=25, pady=20, command=play_vocals)
 button3.pack()
+button4 = tk.Button(a, text='Drum (hit)', width=25, pady=20)
+button4.bind('<ButtonPress-1>', start_drum_hit)
+button4.bind('<ButtonRelease-1>', stop_drum_hit)
+button4.pack()
 a.mainloop()
