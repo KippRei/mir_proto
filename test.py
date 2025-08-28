@@ -50,8 +50,8 @@ import pyrubberband as pyrb
 import librosa
 
 bpm_filename = 'doechii.mp3'
-in_filename = 'separated/htdemucs/no_one_else/other.mp3'
-out_filename = 'stretched_pitched_no_one_other.mp3'
+in_filename = 'doechii_maybe/doechii_maybe_no_one_mel.mp3'
+out_filename = 'doechii_maybe/doechii_maybe_no_one_mel_pitch.mp3'
 
 y, sr = librosa.load(bpm_filename)
 tempo, beat_frames = librosa.beat.beat_track(y=y, sr=sr)
@@ -70,10 +70,10 @@ print(amt_to_stretch)
 y3, sr3 = sf.read(in_filename)
 output_file = out_filename
 # Play back at double speed
-y_stretch = pyrb.time_stretch(y3, sr3, amt_to_stretch)
+# y_stretch = pyrb.time_stretch(y3, sr3, amt_to_stretch)
 # Play back two semi-tones higher
-y_shift = pyrb.pitch_shift(y, sr, -2)
-sf.write(output_file, y_stretch, sr3, format='MP3')
+y_shift = pyrb.pitch_shift(y3, sr3, -2)
+sf.write(output_file, y_shift, sr3, format='MP3')
 
 y2, sr2 = librosa.load(out_filename)
 tempo2, beat_frames2 = librosa.beat.beat_track(y=y2, sr=sr2)

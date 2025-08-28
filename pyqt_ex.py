@@ -173,7 +173,7 @@ if __name__ == '__main__':
         out_port = mido.open_output(output_port_name)
     except Exception as e:
         print(f"Error opening MIDI output port: {e}")
-        sys.exit(1)
+        # sys.exit(1)
 
     midi_thread = threading.Thread(target=midi_listener, daemon=True)
     midi_thread.start()

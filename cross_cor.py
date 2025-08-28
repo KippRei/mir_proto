@@ -20,6 +20,7 @@ for idx, row in song_list.iterrows():
 
     y, sr = librosa.load(f"harmonixset/src/mp3s/{song_file_name}")
     tempo, beat_frames = librosa.beat.beat_track(y=y, sr=sr)
+    print(f'Song Title: {song_file_name}')
     print(f'Librosa Estimated tempo: {tempo[0]:.1f} BPM')
     if round(tempo[0]) != actual_bpm:
         lib_err += 1
