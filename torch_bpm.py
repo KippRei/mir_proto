@@ -6,8 +6,10 @@ from torch.utils.data import Dataset, DataLoader
 import torch.nn.functional as F
 from torch import nn
 import torchvision.transforms as transforms
+import time
 
-device = torch.accelerator.current_accelerator().type if torch.accelerator.is_available() else "cpu"
+# device = torch.accelerator.current_accelerator().type if torch.accelerator.is_available() else "cpu"
+device = "cpu"
 print(f"Using {device} device")
 
 MAX_LENGTH = 3000
@@ -15,9 +17,12 @@ MAX_LENGTH = 3000
 class Net(nn.Module):
     def __init__(self):
         super().__init__()
-        self.conv1 = nn.Conv2d(1, 4, 3)
+        self.conv1 = nn.Conv2d(1, 16, 3)
         self.pool = nn.MaxPool2d(2, 2)
-        self.conv2 = nn.Conv2d(4, 8, 3)
+        self.conv2 = nn.Conv2d(16, 32, 3)
+        self.pool = nn.MaxPool2d(2, 2)
+        self.conv3 = nn.Conv2d(32, 64, 3)
+
         
         # Calculate the size of the flattened tensor dynamically
         # Start with a dummy input tensor of the same shape as your padded input
@@ -63,6 +68,10 @@ class BPMDataset(Dataset):
         mel_spectro = librosa.feature.melspectrogram(y=y, sr=sr)
         audio_tensor = torch.from_numpy(mel_spectro).float().unsqueeze(0)
 
+        mean = audio_tensor.mean()
+        std = audio_tensor.std()
+        audio_tensor = (audio_tensor - mean) / (std + 1e-6)
+
         bpm_label = self.bpm_labels.iloc[idx, 1]
         bpm_tensor = torch.tensor(bpm_label).float()
 
@@ -73,6 +82,10 @@ class BPMDataset(Dataset):
 
         return audio_tensor, bpm_tensor
     
+def evaluate_mae(outputs, labels):
+    mae = torch.mean(torch.abs(outputs - labels))
+    return mae.item()
+
 # TODO: Study this more (from Gemini)
 def pad_collate(batch):
     max_len = MAX_LENGTH
@@ -97,14 +110,10 @@ def pad_collate(batch):
 
     return audio_batch, bpm_batch
 
-training_data = BPMDataset('bpm_test_run.csv', 'harmonixset/src/mp3s')
-test_data = BPMDataset('bpm_test_run.csv', 'harmonixset/src/mp3s')
+training_data = BPMDataset('bpm_train_TEST.csv', 'harmonixset/src/mp3s')
+test_data = BPMDataset('bpm_test_TEST.csv', 'harmonixset/src/mp3s')
 
-transform = transforms.Compose(
-    [transforms.ToTensor(),
-     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
-
-BATCH_SZ = 1
+BATCH_SZ = 2
 
 train_dataloader = DataLoader(training_data, batch_size=BATCH_SZ, shuffle=True, collate_fn=pad_collate)
 test_dataloader = DataLoader(test_data, batch_size=BATCH_SZ, shuffle=True, collate_fn=pad_collate)
@@ -122,26 +131,27 @@ test_dataloader = DataLoader(test_data, batch_size=BATCH_SZ, shuffle=True, colla
 # print(model)
 
 loss_fn = nn.MSELoss()
-optimizer = torch.optim.SGD(model.parameters(), lr=1e-3)
+optimizer = torch.optim.Adam(model.parameters(), lr=5e-5) # A better optimizer with an adaptive learning rate
 
 def train(dataloader, model, loss_fn, optimizer):
     size = len(dataloader.dataset)
     model.train()
-    for batch, (X, y) in enumerate(dataloader):
-        X, y = X.to(device), y.to(device)
+    for batch, (inputs, labels) in enumerate(dataloader):
+        inputs = inputs.to(device)
+        labels = labels.to(device).unsqueeze(1)
 
         # Compute prediction error
-        pred = model(X)
-        loss = loss_fn(pred, y)
-
+        outputs = model(inputs)
+        loss = loss_fn(outputs, labels)
         # Backpropagation
         loss.backward()
+        torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
         optimizer.step()
         optimizer.zero_grad()
 
-        if batch % 100 == 0:
-            loss, current = loss.item(), (batch + 1) * len(X)
-            print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
+        # if batch % 100 == 0:
+        #     loss, current = loss.item(), (batch + 1) * len(inputs)
+        #     print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
 
 def test(dataloader, model, loss_fn):
     size = len(dataloader.dataset)
@@ -150,38 +160,27 @@ def test(dataloader, model, loss_fn):
     test_loss, correct = 0, 0
     with torch.no_grad():
         for X, y in dataloader:
-            X, y = X.to(device), y.to(device)
+            X, y = X.to(device), y.to(device).unsqueeze(1)
             pred = model(X)
             test_loss += loss_fn(pred, y).item()
             correct += (pred.argmax(1) == y).type(torch.float).sum().item()
     test_loss /= num_batches
     correct /= size
-    print(f"Test Error: \n Accuracy: {(100*correct):>0.1f}%, Avg loss: {test_loss:>8f} \n")
+    mae = evaluate_mae(pred, y)
+    print(f"Test Error: \n MAE: {mae:>8f}, Avg loss: {test_loss:>8f} \n")
+    return mae
 
-for i, epoch in enumerate(range(2)):  # loop over the dataset multiple times
+for i, epoch in enumerate(range(10)):  # loop over the dataset multiple times
+    start_time = time.time()
     print(f"----Epoch {i+1}----")
-    running_loss = 0.0
-    for i, data in enumerate(train_dataloader, 0):
-        # get the inputs; data is a list of [inputs, labels]
-        inputs, labels = data
+    # Call the train function to train the model for one epoch
+    train(train_dataloader, model, loss_fn, optimizer)
+    
+    # Call the test function to evaluate the model after each epoch
+    error = test(test_dataloader, model, loss_fn)
 
-        # move data to gpu
-        inputs = inputs.to(device)
-        labels = labels.to(device).unsqueeze(1)
-
-        # zero the parameter gradients
-        optimizer.zero_grad()
-
-        # forward + backward + optimize
-        outputs = model(inputs)
-        loss = loss_fn(outputs, labels)
-        loss.backward()
-        optimizer.step()
-
-        # print statistics
-        running_loss += loss.item()
-        if i % 2 == 1:    # print every 2000 mini-batches
-            print(f'[{epoch + 1}, {i + 1:5d}] loss: {running_loss / 2000:.3f}')
-            running_loss = 0.0
+    model_path = f"models/bpm_model_epoch_{i+1}{time.time():0f}({error:.1f}).pth"
+    torch.save(model.state_dict(), model_path)
+    print(f"Elapsed time{time.time() - start_time}")
 
 print('Finished Training')
