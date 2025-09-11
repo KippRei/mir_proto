@@ -4,19 +4,20 @@ from functools import partial
 import mido
 from threading import Thread
 import time
+from queue import Queue
 
 # from gemini -> connect to midi controller
-port_name = 'ATOM 0' 
+input_midi_port_name = 'ATOM 0' 
+output_midi_port_name = 'ATOM 1' 
 
-last_midi_msg = None
+midi_msg_queue = Queue()
 
 def midi_listener():
-    global last_midi_msg
     try:
-        print(f"Opening port: {port_name}...")
-        with mido.open_input(port_name) as port:
+        print(f"Opening port: {input_midi_port_name}...")
+        with mido.open_input(input_midi_port_name) as port:
             for msg in port:
-                last_midi_msg = msg
+                midi_msg_queue.put(msg)
                 # Check if the message is a 'note_on' message (i.e., a pad was pressed)
                 if msg.type == 'note_on':
                     print(f"Pad pressed! Note: {msg.note}, Velocity: {msg.velocity}")
@@ -30,7 +31,7 @@ def midi_listener():
                     print(f"Received message: {msg}")
 
     except mido.PortNotOpenError:
-        print(f"Error: Could not open port '{port_name}'. Make sure your device is connected and recognized.")
+        print(f"Error: Could not open port '{input_midi_port_name}'. Make sure your device is connected and recognized.")
         print("Available ports:")
         print(mido.get_input_names())
     except KeyboardInterrupt:
@@ -51,6 +52,8 @@ class TkApp(tk.Tk):
         self.m_thread.start()
         self.init_tracks()
         self.init_ui()
+
+        self.after(15, self.init_midi_listener)
 
     def init_tracks(self):
         # add stems to buttons
@@ -85,10 +88,10 @@ class TkApp(tk.Tk):
     def init_ui(self):
         self.title('InsideOut')
         self.geometry('500x400')
-        self.s1 = tk.Scale(self, from_=1, to=0, resolution=0.01, command=partial(self.update_vol, 'drums'))
-        self.s2 = tk.Scale(self, from_=1, to=0, resolution=0.01, command=partial(self.update_vol, 'melody'))
-        self.s3 = tk.Scale(self, from_=1, to=0, resolution=0.01, command=partial(self.update_vol, 'vocals'))
-        self.s4 = tk.Scale(self, from_=1, to=0, resolution=0.01, command=partial(self.update_vol, 'drums'))
+        self.s1 = tk.Scale(self, from_=1, to=0, resolution=0.01)
+        self.s2 = tk.Scale(self, from_=1, to=0, resolution=0.01)
+        self.s3 = tk.Scale(self, from_=1, to=0, resolution=0.01)
+        self.s4 = tk.Scale(self, from_=1, to=0, resolution=0.01)
         self.s1.set(1)
         self.s2.set(1)
         self.s3.set(1)
@@ -111,19 +114,18 @@ class TkApp(tk.Tk):
         self.s4.grid(row=3, column=1)
 
     def init_midi_listener(self):
-        while True:
-            global last_midi_msg
-            if last_midi_msg is not None:
-                if last_midi_msg.type == 'note_on':
-                    self.process_midi_input(last_midi_msg.note)
-                if last_midi_msg.type == 'note_off':
-                    self.drum1_on = False
-                    self.melody1_on = False
-                    self.vocal1_on = False
-                if last_midi_msg.type == 'control_change':
-                    self.process_midi_control_change(last_midi_msg)
-
-            time.sleep(0.01)
+        while not midi_msg_queue.empty():
+            midi_msg = midi_msg_queue.get()
+            if midi_msg.type == 'note_on':
+                self.process_midi_input(midi_msg.note)
+            elif midi_msg.type == 'note_off':
+                self.drum1_on = False
+                self.melody1_on = False
+                self.vocal1_on = False
+            elif midi_msg.type == 'control_change':
+                self.process_midi_control_change(midi_msg)
+        
+        self.after(15, self.init_midi_listener)
 
     def process_midi_control_change(self, msg):
         if msg.control == 14:
@@ -151,7 +153,7 @@ class TkApp(tk.Tk):
             self.vocal1_on = True
 
     def update_vol(self, track, value):
-        val = 0.01 * value
+        val = int(value) / 126.0
         match track:
             case 'drums':
                 if self.ch1_on:
@@ -236,7 +238,44 @@ class TkApp(tk.Tk):
 # button4.bind('<ButtonRelease-1>', stop_drum_hit)
 # button4.pack()
 
+
+
+
+
 if __name__ == '__main__':
+
+    # Thanks to https://github.com/EMATech/AtomCtrl
+    # TODO: create color control script
+    # TODO: fix volume knobs, in native mode they give value of 1 if turned left and 65 if turned right so need to add/subtract from volume (can't rely on knob value)
+    # Pad color control numbers (CC numbers)
+    CC_PAD_DRUMS = 36
+    CC_PAD_STRINGS = 37
+    CC_PAD_VOCALS = 38
+
+    # Color values
+    RED = [127, 0, 0]
+    GREEN = [0, 127, 0]
+    BLUE = [0, 0, 127]
+
+    try:
+        out_port = mido.open_output(output_midi_port_name)
+    except Exception as e:
+        print(f"Error opening MIDI output port: {e}")
+        # sys.exit(1)
+
+    # Put MIDI controller in native mode
+    out_port.send(mido.Message('note_off', channel=15, note=0, velocity=127))
+    # Initialize the button colors
+    try:
+        '''channel 0 '''
+        out_port.send(mido.Message('note_on', channel=0, note=36, velocity=127))
+        out_port.send(mido.Message('note_on', channel=1, note=36, velocity=GREEN[0]))
+        out_port.send(mido.Message('note_on', channel=2, note=36, velocity=GREEN[1]))
+        out_port.send(mido.Message('note_on', channel=3, note=36, velocity=GREEN[2]))
+    except Exception as e:
+        print(f"Error initializing pad colors: {e}")
+
+
     t = Thread(target=midi_listener, daemon=True)
     t.start()
     window = TkApp()
