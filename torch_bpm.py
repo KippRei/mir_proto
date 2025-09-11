@@ -7,7 +7,6 @@ import torch.nn.functional as F
 from torch import nn
 import torchvision.transforms as transforms
 import torchaudio
-from torchcodec import decoders
 import time
 
 device = torch.accelerator.current_accelerator().type if torch.accelerator.is_available() else "cpu"
@@ -87,7 +86,7 @@ class BPMDataset(Dataset):
     
     def __getitem__(self, idx):
         song_path = os.path.join(self.song_dir, self.bpm_labels.iloc[idx, 0])
-        y, sr = decoders.AudioDecoder(song_path, num_channels=1)
+        y, sr = torchaudio.load(song_path, normalize=True)
         y = y.mean(dim=0)
         mel_spectro = torchaudio.transforms.MelSpectrogram(sr)
         audio_tensor = mel_spectro(y).unsqueeze(0)
