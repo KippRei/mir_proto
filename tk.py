@@ -3,7 +3,6 @@ import pygame
 from functools import partial
 import mido
 from threading import Thread
-import time
 from queue import Queue
 
 # from gemini -> connect to midi controller
@@ -125,7 +124,7 @@ class TkApp(tk.Tk):
             elif midi_msg.type == 'control_change':
                 self.process_midi_control_change(midi_msg)
         
-        self.after(15, self.init_midi_listener)
+        self.after(10, self.init_midi_listener)
 
     def process_midi_control_change(self, msg):
         if msg.control == 14:
