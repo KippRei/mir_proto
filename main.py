@@ -6,11 +6,12 @@ import qt_gui
 from PyQt6.QtWidgets import QApplication
 
 app = QApplication(sys.argv)
-music = AudioPlayer()
+audio_manager = AudioPlayer()
 midi_manager = MIDIManager()
 gui_window = qt_gui.QtGui()
-midi_controller = MIDIController(midi_manager)
+midi_controller = MIDIController(midi_manager, audio_manager)
 
+# Gets quit signal emitted from midi controller when quit button pressed
 midi_controller.quit_signal.connect(app.quit)
 
 gui_window.show()

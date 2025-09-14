@@ -9,6 +9,7 @@ class QtGui(QWidget):
         self.__init_ui()
 
     def __init_ui(self):
+        # TODO: build this with loops
         layout = QGridLayout()
 
         self.drum_vol = QSlider()

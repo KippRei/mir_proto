@@ -2,13 +2,14 @@ import pygame
 
 class AudioPlayer():
     def __init__(self):
+        self.drum_vol = self.bass_vol = self.melody_vol = self.vocal_vol = 100
         self.init_tracks()
 
     def init_tracks(self):
         # add stems to buttons
         pygame.mixer.init()
         pygame.mixer.set_num_channels(16)
-        
+
         self.drum_track = pygame.mixer.Sound('doechii_maybe/doechii_maybe_drums.mp3')
         self.string_track = pygame.mixer.Sound('doechii_maybe/doechii_maybe_strings.mp3')
         self.string_track2 = pygame.mixer.Sound('doechii_maybe/doechii_maybe_no_one_mel_pitch.mp3')
@@ -64,6 +65,37 @@ class AudioPlayer():
             
             case _:
                 print('Invalid volume adjustment')
+
+    def adj_track_vol(self, track, adjustment):
+        match track:
+            case 'drum':
+                print(self.drum_vol)
+                self.drum_vol += adjustment
+                if self.drum_vol > 100:
+                    self.drum_vol = 100
+                elif self.drum_vol < 0:
+                    self.drum_vol = 0
+                print(self.drum_vol)
+                
+            case 'bass':
+                self.bass_vol += adjustment
+                if self.bass_vol > 100:
+                    self.bass_vol = 100
+                elif self.bass_vol < 0:
+                    self.bass_vol = 0
+            case 'melody':
+                self.melody_vol += adjustment
+                if self.melody_vol > 100:
+                    self.melody_vol = 100
+                elif self.melody_vol < 0:
+                    self.melody_vol = 0
+            case 'vocal':
+                self.vocal_vol += adjustment
+                if self.vocal_vol > 100:
+                    self.vocal_vol = 100
+                elif self.vocal_vol < 0:
+                    self.vocal_vol = 0
+        
 
     def play_track(self, channel, vol):
         match channel:
