@@ -6,8 +6,9 @@ class AudioPlayer():
 
     def init_tracks(self):
         # add stems to buttons
-        pygame.mixer.init(channels=16)
-
+        pygame.mixer.init()
+        pygame.mixer.set_num_channels(16)
+        
         self.drum_track = pygame.mixer.Sound('doechii_maybe/doechii_maybe_drums.mp3')
         self.string_track = pygame.mixer.Sound('doechii_maybe/doechii_maybe_strings.mp3')
         self.string_track2 = pygame.mixer.Sound('doechii_maybe/doechii_maybe_no_one_mel_pitch.mp3')
