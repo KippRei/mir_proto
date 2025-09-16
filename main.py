@@ -1,4 +1,5 @@
 import sys
+import functools # might need for partial
 from audio_manager import AudioPlayer
 from midi_manager import MIDIManager
 from midi_controller import MIDIController
@@ -8,11 +9,13 @@ from PyQt6.QtWidgets import QApplication
 app = QApplication(sys.argv)
 audio_manager = AudioPlayer()
 midi_manager = MIDIManager()
-gui_window = qt_gui.QtGui()
-midi_controller = MIDIController(midi_manager, audio_manager)
+gui_window = qt_gui.QtGui(audio_manager, midi_manager)
+midi_controller = MIDIController(audio_manager, midi_manager)
 
 # Gets quit signal emitted from midi controller when quit button pressed
 midi_controller.quit_signal.connect(app.quit)
+midi_controller.change_vol_signal.connect(gui_window.set_vol_slider)
+midi_controller.change_pad_color_signal.connect(gui_window.set_button_color)
 
 gui_window.show()
 sys.exit(app.exec())

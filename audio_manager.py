@@ -32,13 +32,13 @@ class AudioPlayer():
         self.channel15 = pygame.mixer.Channel(14)
         self.channel16 = pygame.mixer.Channel(15)
 
-
-        self.channel1.play(self.drum_track)
-        self.channel2.play(self.string_track)
-        self.channel3.play(self.vocal_track)
-        # channel4.play(self.drum_track)
-        self.channel5.play(self.string_track2)
-        self.channel5.set_volume(0)
+        # # Uncomment this to play when program starts
+        # self.channel1.play(self.drum_track)
+        # self.channel2.play(self.string_track)
+        # self.channel3.play(self.vocal_track)
+        # # channel4.play(self.drum_track)
+        # self.channel5.play(self.string_track2)
+        # self.channel5.set_volume(0)
 
     def update_vol(self, track, value):
         val = int(value) / 126.0
@@ -69,14 +69,11 @@ class AudioPlayer():
     def adj_track_vol(self, track, adjustment):
         match track:
             case 'drum':
-                print(self.drum_vol)
                 self.drum_vol += adjustment
                 if self.drum_vol > 100:
                     self.drum_vol = 100
                 elif self.drum_vol < 0:
                     self.drum_vol = 0
-                print(self.drum_vol)
-                
             case 'bass':
                 self.bass_vol += adjustment
                 if self.bass_vol > 100:
@@ -166,6 +163,16 @@ class AudioPlayer():
             self.button3.config(text='Vocals (off)')
             self.ch3_on = False
 
+    def get_track_vol(self, name):
+        match name:
+            case 'drum':
+                return self.drum_vol
+            case 'bass':
+                return self.bass_vol
+            case 'melody':
+                return self.melody_vol
+            case 'vocal':
+                return self.vocal_vol
 
 class AudioController():
     def __init__(self):
