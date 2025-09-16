@@ -1,3 +1,4 @@
+# TODO: Needs refactoring to follow MVC design pattern
 import pygame
 
 class AudioPlayer():

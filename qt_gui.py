@@ -7,6 +7,8 @@ class QtGui(QWidget):
         self.audio_manager = audio_manager
         self.midi_manager = midi_manager
         self.color_map = self.midi_manager.get_pad_color_map()
+
+        # Button maps = {MIDI controller pad num: QPushButton}
         self.drum_buttons = {
             48: None,
             44: None,
@@ -77,6 +79,7 @@ class QtGui(QWidget):
 
         self.setLayout(layout)
 
+    # Sets position of volume slider
     def set_vol_slider(self, name):
         match name:
             case 'drum':
@@ -88,6 +91,9 @@ class QtGui(QWidget):
             case 'vocal':
                 self.vocal_vol.setValue(self.audio_manager.get_track_vol('vocal'))
 
+    # Sets GUI button colors
+    # TODO: Right now this iterates over every button every time it is updated
+    # TODO (cont): Ideally it would only update the button that is pressed (and its column)
     def set_button_color(self):   
         for button_set in self.buttons_arr:
             for key in button_set.keys():

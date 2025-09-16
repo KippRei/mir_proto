@@ -15,6 +15,7 @@ class MIDIController(QObject):
         self.midi_timer.timeout.connect(self.process_midi_messages)
         self.midi_timer.start()
 
+    # Controls what happens when MIDI message is received
     def process_midi_messages(self):
         for msg in self.midi_manager.get_messages():
             print(msg)
@@ -47,9 +48,11 @@ class MIDIController(QObject):
                             elif msg.value == 65:
                                 self.audio_manager.adj_track_vol('vocal', -3)
                             self.change_vol_signal.emit('vocal')
+                        # Stop button
                         case 111:
                             self.quit_signal.emit()
 
+    # Logic for changing pad color map values to 'ON' for button pressed and changes color of all other buttons in column to 'OFF'
     def change_pad_color(self, note_num):
         col_mod = (note_num - 36) % 4
         for k in self.pad_color_map:
@@ -58,5 +61,7 @@ class MIDIController(QObject):
             elif k % 4 == col_mod:
                 self.pad_color_map[k] = self.midi_manager.get_pad_on_off_color('off') # note off color = purple
 
+        # Tell midi manager to update colors
         self.midi_manager.set_pad_colors()
+        # Emit signal to tell GUI to update
         self.change_pad_color_signal.emit()

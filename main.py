@@ -12,7 +12,6 @@ midi_manager = MIDIManager()
 gui_window = qt_gui.QtGui(audio_manager, midi_manager)
 midi_controller = MIDIController(audio_manager, midi_manager)
 
-# Gets quit signal emitted from midi controller when quit button pressed
 midi_controller.quit_signal.connect(app.quit)
 midi_controller.change_vol_signal.connect(gui_window.set_vol_slider)
 midi_controller.change_pad_color_signal.connect(gui_window.set_button_color)
