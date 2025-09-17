@@ -1,12 +1,51 @@
-# TODO: Needs refactoring to follow MVC design pattern
-import pygame
+import time
+import sounddevice as sd
+import librosa
+import numpy as np
+
+# File paths for all the stems
+fp = 'doechii_maybe/doechii_maybe_drums.mp3'
+fp2 = 'doechii_maybe/doechii_maybe_strings.mp3'
+fp3 = 'doechii_maybe/doechii_maybe_no_one_mel_pitch.mp3'
+fp4 = 'doechii_maybe/doechii_maybe_vocals.mp3'
+
+# Load all audio files at a high sample rate and preserve stereo channels
+# The .T transposes the array from (channels, samples) to (samples, channels)
+# This is required by sounddevice
+y, sr = librosa.load(fp, sr=44100, mono=False)
+y1, sr = librosa.load(fp2, sr=44100, mono=False)
+y2, sr = librosa.load(fp3, sr=44100, mono=False)
+y3, sr = librosa.load(fp4, sr=44100, mono=False)
+
+# Get the length of the longest array. The length is the number of samples,
+# which is the second dimension of the array.
+max_len = max(y.shape[1], y1.shape[1], y2.shape[1], y3.shape[1])
+
+# Pad each array with zeros to match the maximum length
+# The pad_width is a tuple of tuples: ((rows before, rows after), (cols before, cols after))
+padded_y = np.pad(y, ((0, 0), (0, max_len - y.shape[1])))
+padded_y1 = np.pad(y1, ((0, 0), (0, max_len - y1.shape[1])))
+padded_y2 = np.pad(y2, ((0, 0), (0, max_len - y2.shape[1])))
+padded_y3 = np.pad(y3, ((0, 0), (0, max_len - y3.shape[1])))
+
+# Now that all arrays have the same length, you can add them together
+Y = padded_y + padded_y1 + padded_y3
+
+# Normalize the combined signal to prevent clipping
+normalized_Y = Y / len([y, y1, y3])
+
+# Transpose the array to the (samples, channels) format
+# required by sounddevice for stereo playback
+final_audio = np.transpose(Y)
+
+# Play the combined audio and wait
+sd.play(final_audio, sr)
+sd.wait()
 
 class AudioPlayer():
     def __init__(self):
         self.drum_vol = self.bass_vol = self.melody_vol = self.vocal_vol = 1
                 # add stems to buttons
-        pygame.mixer.init()
-        pygame.mixer.set_num_channels(16)
 
         self.drum_track = pygame.mixer.Sound('doechii_maybe/doechii_maybe_drums.mp3')
         self.string_track = pygame.mixer.Sound('doechii_maybe/doechii_maybe_strings.mp3')

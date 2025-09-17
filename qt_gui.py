@@ -81,15 +81,17 @@ class QtGui(QWidget):
 
     # Sets position of volume slider
     def set_vol_slider(self, name):
+        vol = self.audio_manager.get_track_vol(name) * 100
+        vol = int(vol)
         match name:
             case 'drum':
-                self.drum_vol.setValue(self.audio_manager.get_track_vol('drum'))
+                self.drum_vol.setValue(vol)
             case 'bass':
-                self.bass_vol.setValue(self.audio_manager.get_track_vol('bass'))
+                self.bass_vol.setValue(vol)
             case 'melody':
-                self.melody_vol.setValue(self.audio_manager.get_track_vol('melody'))
+                self.melody_vol.setValue(vol)
             case 'vocal':
-                self.vocal_vol.setValue(self.audio_manager.get_track_vol('vocal'))
+                self.vocal_vol.setValue(vol)
 
     # Sets GUI button colors
     # TODO: Right now this iterates over every button every time it is updated

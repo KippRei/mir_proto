@@ -2,7 +2,7 @@ import subprocess
 import os
 
 # Define the input audio file and output directory
-input_audio = 'apollo.mp3'
+input_audio = '../misc_mp3s/sos.mp3'
 output_dir = 'stems_demucs'
 
 # Create output directory if it doesn't exist
