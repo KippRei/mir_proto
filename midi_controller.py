@@ -9,6 +9,7 @@ class MIDIController(QObject):
         super().__init__()
         self.midi_manager = midi_manager
         self.audio_manager = audio_manager
+        self.channel_map = self.audio_manager.get_channel_map()
         self.pad_color_map = self.midi_manager.get_pad_color_map()
         self.midi_timer = QTimer()
         self.midi_timer.setInterval(10)
@@ -24,37 +25,37 @@ class MIDIController(QObject):
                 case 'note_on':
                     match msg.note:
                         case 36:
-                            self.audio_manager.play_channel(1)
+                            self.audio_manager.play_channel(0)
                         case 37:
-                            self.audio_manager.play_channel(2)
+                            self.audio_manager.play_channel(1)
                         case 38:
-                            self.audio_manager.play_channel(3)
+                            self.audio_manager.play_channel(2)
                         case 39:
-                            self.audio_manager.play_channel(4)
+                            self.audio_manager.play_channel(3)
                         case 40:
-                            self.audio_manager.play_channel(5)
+                            self.audio_manager.play_channel(4)
                         case 41:
-                            self.audio_manager.play_channel(6)
+                            self.audio_manager.play_channel(5)
                         case 42:
-                            self.audio_manager.play_channel(7)
+                            self.audio_manager.play_channel(6)
                         case 43:
-                            self.audio_manager.play_channel(8)
+                            self.audio_manager.play_channel(7)
                         case 44:
-                            self.audio_manager.play_channel(9)
+                            self.audio_manager.play_channel(8)
                         case 45:
-                            self.audio_manager.play_channel(10)
+                            self.audio_manager.play_channel(9)
                         case 46:
-                            self.audio_manager.play_channel(11)
+                            self.audio_manager.play_channel(10)
                         case 47:
-                            self.audio_manager.play_channel(12)
+                            self.audio_manager.play_channel(11)
                         case 48:
-                            self.audio_manager.play_channel(13)
+                            self.audio_manager.play_channel(12)
                         case 49:
-                            self.audio_manager.play_channel(14)
+                            self.audio_manager.play_channel(13)
                         case 50:
-                            self.audio_manager.play_channel(15)
+                            self.audio_manager.play_channel(14)
                         case 51:
-                            self.audio_manager.play_channel(16)
+                            self.audio_manager.play_channel(15)
 
                     self.change_pad_color()
 
@@ -94,8 +95,8 @@ class MIDIController(QObject):
 
     # Logic for changing pad color map values to 'ON' for button pressed and changes color of all other buttons in column to 'OFF'
     def change_pad_color(self):
-        for k, v in self.audio_manager.get_channel_map().items():
-            self.pad_color_map[k+35] = self.midi_manager.get_pad_on_off_color('on') if v.get_volume() > 0 else self.midi_manager.get_pad_on_off_color('off')
+        for k in self.channel_map.keys():
+            self.pad_color_map[k+36] = self.midi_manager.get_pad_on_off_color('on') if self.channel_map[k]['is_playing'] is True else self.midi_manager.get_pad_on_off_color('off')
     
         # Tell midi manager to update colors
         self.midi_manager.set_pad_colors()
