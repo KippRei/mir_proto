@@ -1,6 +1,6 @@
 import sys
 import functools # might need for partial
-from audio_manager import AudioPlayer
+from new_audio_manager import AudioPlayer
 from midi_manager import MIDIManager
 from midi_controller import MIDIController
 import qt_gui

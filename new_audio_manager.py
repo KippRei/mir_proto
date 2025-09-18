@@ -1,73 +1,47 @@
-import time
 import sounddevice as sd
-import librosa
 import numpy as np
+import mkr_audio
 
-# File paths for all the stems
-fp = 'doechii_maybe/doechii_maybe_drums.mp3'
-fp2 = 'doechii_maybe/doechii_maybe_strings.mp3'
-fp3 = 'doechii_maybe/doechii_maybe_no_one_mel_pitch.mp3'
-fp4 = 'doechii_maybe/doechii_maybe_vocals.mp3'
+# Y = padded_y + padded_y1 + padded_y3
 
-# Load all audio files at a high sample rate and preserve stereo channels
-# The .T transposes the array from (channels, samples) to (samples, channels)
-# This is required by sounddevice
-y, sr = librosa.load(fp, sr=44100, mono=False)
-y1, sr = librosa.load(fp2, sr=44100, mono=False)
-y2, sr = librosa.load(fp3, sr=44100, mono=False)
-y3, sr = librosa.load(fp4, sr=44100, mono=False)
+# # Normalize the combined signal to prevent clipping
+# # normalized_Y = Y / len([y, y1, y3])
 
-# Get the length of the longest array. The length is the number of samples,
-# which is the second dimension of the array.
-max_len = max(y.shape[1], y1.shape[1], y2.shape[1], y3.shape[1])
+# # Transpose the array to the (samples, channels) format
+# # required by sounddevice for stereo playback
+# final_audio = np.transpose(Y)
 
-# Pad each array with zeros to match the maximum length
-# The pad_width is a tuple of tuples: ((rows before, rows after), (cols before, cols after))
-padded_y = np.pad(y, ((0, 0), (0, max_len - y.shape[1])))
-padded_y1 = np.pad(y1, ((0, 0), (0, max_len - y1.shape[1])))
-padded_y2 = np.pad(y2, ((0, 0), (0, max_len - y2.shape[1])))
-padded_y3 = np.pad(y3, ((0, 0), (0, max_len - y3.shape[1])))
-
-# Now that all arrays have the same length, you can add them together
-Y = padded_y + padded_y1 + padded_y3
-
-# Normalize the combined signal to prevent clipping
-normalized_Y = Y / len([y, y1, y3])
-
-# Transpose the array to the (samples, channels) format
-# required by sounddevice for stereo playback
-final_audio = np.transpose(Y)
-
-# Play the combined audio and wait
-sd.play(final_audio, sr)
-sd.wait()
+# # Play the combined audio and wait
+# sd.play(final_audio, 44100)
+# sd.wait()
 
 class AudioPlayer():
     def __init__(self):
+        # To hold volume levels
         self.drum_vol = self.bass_vol = self.melody_vol = self.vocal_vol = 1
-                # add stems to buttons
 
-        self.drum_track = pygame.mixer.Sound('doechii_maybe/doechii_maybe_drums.mp3')
-        self.string_track = pygame.mixer.Sound('doechii_maybe/doechii_maybe_strings.mp3')
-        self.string_track2 = pygame.mixer.Sound('doechii_maybe/doechii_maybe_no_one_mel_pitch.mp3')
-        self.vocal_track = pygame.mixer.Sound('doechii_maybe/doechii_maybe_vocals.mp3')
+        self.drum_tr = np.load("./preprocessed_audio/0.npy")
+        self.melody_tr = np.load("./preprocessed_audio/2.npy")
+        self.vocal_tr = np.load("./preprocessed_audio/3.npy")
 
-        self.channel1 = pygame.mixer.Channel(0)
-        self.channel2 = pygame.mixer.Channel(1)
-        self.channel3 = pygame.mixer.Channel(2)
-        self.channel4 = pygame.mixer.Channel(3)
-        self.channel5 = pygame.mixer.Channel(4)
-        self.channel6 = pygame.mixer.Channel(5)
-        self.channel7 = pygame.mixer.Channel(6)
-        self.channel8 = pygame.mixer.Channel(7)
-        self.channel9 = pygame.mixer.Channel(8)
-        self.channel10 = pygame.mixer.Channel(9)
-        self.channel11 = pygame.mixer.Channel(10)
-        self.channel12 = pygame.mixer.Channel(11)
-        self.channel13 = pygame.mixer.Channel(12)
-        self.channel14 = pygame.mixer.Channel(13)
-        self.channel15 = pygame.mixer.Channel(14)
-        self.channel16 = pygame.mixer.Channel(15)
+        self.mixer = mkr_audio.Mixer()
+
+        self.channel1 = self.mixer.channel(0)
+        self.channel2 = self.mixer.channel(1)
+        self.channel3 = self.mixer.channel(2)
+        self.channel4 = self.mixer.channel(3)
+        self.channel5 = self.mixer.channel(4)
+        self.channel6 = self.mixer.channel(5)
+        self.channel7 = self.mixer.channel(6)
+        self.channel8 = self.mixer.channel(7)
+        self.channel9 = self.mixer.channel(8)
+        self.channel10 = self.mixer.channel(9)
+        self.channel11 = self.mixer.channel(10)
+        self.channel12 = self.mixer.channel(11)
+        self.channel13 = self.mixer.channel(12)
+        self.channel14 = self.mixer.channel(13)
+        self.channel15 = self.mixer.channel(14)
+        self.channel16 = self.mixer.channel(15)
 
         self.channel_map = {
             1: self.channel1,
@@ -87,24 +61,17 @@ class AudioPlayer():
             15: self.channel15,
             16: self.channel16,
         }
-        for v in self.channel_map.values():
-            v.set_volume(0)
-        self.channel1.queue(self.drum_track)
-        self.channel3.queue(self.string_track)
-        self.channel4.queue(self.vocal_track)
+
+        # for v in self.channel_map.values():
+        #     v.set_volume(0)
+        self.channel1.load(self.drum_tr)
+        self.channel3.load(self.melody_tr)
+        self.channel4.load(self.vocal_tr)
+
         # channel4.play(self.drum_track)
-        self.channel7.queue(self.string_track2)
-        self.hit_stop()
 
     def hit_play(self):
-        for v in self.channel_map.values():
-            v.stop()
-        # Uncomment this to autoplay when program starts
-        self.channel1.queue(self.drum_track)
-        self.channel3.queue(self.string_track)
-        self.channel4.queue(self.vocal_track)
-        # channel4.play(self.drum_track)
-        self.channel7.queue(self.string_track2)
+        self.mixer.play()
     
     def hit_stop(self):
         for v in self.channel_map.values():
@@ -168,8 +135,8 @@ class AudioPlayer():
         # TODO: Do this a better way
         # TODO: to see if track/pad/light is on or off we check to see if volume is 0
         # TODO (cont): hacky way of doing this, fix after testing
-        if self.channel_map[channel].get_volume() != 0:
-           self.channel_map[channel].set_volume(0)
+        if self.mixer.channel_on[channel] is False:
+           self.mixer.channel_on[channel] = True
         else: 
             col_mod = channel % 4
             for k, v in self.channel_map.items():
@@ -178,6 +145,7 @@ class AudioPlayer():
 
             match channel:
                 case 1:
+                    self.mixer.channel_on[1] = True
                     self.channel1.set_volume(self.drum_vol)
                 case 2:
                     self.channel2.set_volume(self.bass_vol)
@@ -224,3 +192,7 @@ class AudioPlayer():
             
     def get_channel_map(self):
         return self.channel_map
+    
+
+# if __name__ == "__main__":
+#     a = AudioPlayer()
