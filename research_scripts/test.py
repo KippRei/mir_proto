@@ -49,33 +49,42 @@ import soundfile as sf
 import pyrubberband as pyrb
 import librosa
 
-bpm_filename = 'doechii.mp3'
-in_filename = 'doechii_maybe/doechii_maybe_no_one_mel.mp3'
-out_filename = 'doechii_maybe/doechii_maybe_no_one_mel_pitch.mp3'
+# bpm_filename = 'doechii.mp3'
+folder_to_process = 'sos'
+in_filenames = [
+    f'../stems/{folder_to_process}/vocals.mp3',
+    f'../stems/{folder_to_process}/drums.mp3',
+    f'../stems/{folder_to_process}/other.mp3',
+    f'../stems/{folder_to_process}/bass.mp3'
+    ]
 
-y, sr = librosa.load(bpm_filename)
-tempo, beat_frames = librosa.beat.beat_track(y=y, sr=sr)
-orig_tempo = tempo[0] - 1
-for t in tempo:
-    print('Estimated original tempo: {:.2f} beats per minute'.format(t))
+for in_filename in in_filenames:
+    out_name = in_filename.split('/')[-1]
+    out_filename = f'../beat_key_matched/{folder_to_process}/{out_name}'
 
-new_tempo = float(input('Tempo to play song: '))
-amt_to_stretch = new_tempo / orig_tempo
+    # y, sr = librosa.load(bpm_filename)
+    # tempo, beat_frames = librosa.beat.beat_track(y=y, sr=sr)
+    # orig_tempo = tempo[0] - 1
+    # for t in tempo:
+    #     print('Estimated original tempo: {:.2f} beats per minute'.format(t))
 
-# Manual stretch entry
-amt_to_stretch = 1.01587301587
+    # new_tempo = float(input('Tempo to play song: '))
+    # amt_to_stretch = new_tempo / orig_tempo
 
-print(amt_to_stretch)
+    # Manual stretch entry
+    amt_to_stretch = 0.94117647058
 
-y3, sr3 = sf.read(in_filename)
-output_file = out_filename
-# Play back at double speed
-# y_stretch = pyrb.time_stretch(y3, sr3, amt_to_stretch)
-# Play back two semi-tones higher
-y_shift = pyrb.pitch_shift(y3, sr3, -2)
-sf.write(output_file, y_shift, sr3, format='MP3')
+    print(amt_to_stretch)
 
-y2, sr2 = librosa.load(out_filename)
-tempo2, beat_frames2 = librosa.beat.beat_track(y=y2, sr=sr2)
-tempo_verify = tempo2[0]
-print('Estimated new tempo (for verification): {:.2f} beats per minute'.format(tempo_verify))
+    y3, sr3 = sf.read(in_filename)
+    output_file = out_filename
+    # Play back at double speed
+    y_stretch = pyrb.time_stretch(y3, sr3, amt_to_stretch)
+    # Play back two semi-tones higher
+    # y_shift = pyrb.pitch_shift(y3, sr3, -2)
+    sf.write(output_file, y_stretch, sr3, format='MP3')
+
+    y2, sr2 = librosa.load(out_filename)
+    tempo2, beat_frames2 = librosa.beat.beat_track(y=y2, sr=sr2)
+    tempo_verify = tempo2[0]
+    print('Estimated new tempo (for verification): {:.2f} beats per minute'.format(tempo_verify))

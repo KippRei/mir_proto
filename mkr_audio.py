@@ -1,3 +1,5 @@
+# This class acts as a 
+
 import numpy as np
 import sounddevice as sd
 import threading
@@ -7,10 +9,9 @@ class Mixer():
     def __init__(self, channels: int= 16):
         self.is_playing = False # flag for whether audio is playing or not
         self.mix_lock = threading.Lock()
-        self.loop_length = 60000 # need to figure out how long 32 bars is
         self.channel_map = {}
         self.stop_event = threading.Event() # this signal is for stopping audio_thread
-        self.currently_playing = np.zeros(shape=(4351282, 2), dtype=float)
+        self.currently_playing = np.zeros(shape=(4351282 * 2, 2), dtype=float)
         for i in range(0, channels):
             self.channel_map[i] = {
                 'channel': _Channel(i, self),
@@ -35,7 +36,9 @@ class Mixer():
 
     def __start_playing(self):
         with sd.OutputStream(samplerate=44100, callback=self.audio_callback, channels=2) as stream:
-            sd.sleep(self.loop_length)
+            # The audio will loop so we want it to continue playing until user presses stop
+            while True and self.is_playing:
+                pass
 
     def __stop_playing(self):
         self.stop_event.set() # set flag to true (to stop playback)

@@ -1,28 +1,30 @@
 import librosa
 import numpy as np
 
-# File paths of stems for testing (will auto-load when program starts)
-fp = 'doechii_maybe/doechii_maybe_drums.mp3'
-fp2 = 'doechii_maybe/doechii_maybe_strings.mp3'
-fp3 = 'doechii_maybe/doechii_maybe_no_one_mel_pitch.mp3'
-fp4 = 'doechii_maybe/doechii_maybe_vocals.mp3'
+file_folder = './doechii_maybe'
+file_names = [
+    'doechii_sos_bass.mp3',
+    'doechii_sos_drum.mp3',
+    'doechii_sos_vocal.mp3',
+    'doechii_sos_melody.mp3',
+    'doechii_maybe_drum.mp3',
+    'doechii_maybe_vocal.mp3',
+    'doechii_maybe_strings.mp3'
+]
 
-# Get np array of audio at 44.1 kHz in stereo
-y, sr = librosa.load(fp, sr=44100, mono=False)
-y1, sr = librosa.load(fp2, sr=44100, mono=False)
-y2, sr = librosa.load(fp3, sr=44100, mono=False)
-y3, sr = librosa.load(fp4, sr=44100, mono=False)
+for file_name in file_names:
+    fp = f"{file_folder}/{file_name}"
 
-# Get max length of column 2 of audio arrays for padding shorter songs (most samples = longest song)
-max_len = max(y.shape[1], y1.shape[1], y2.shape[1], y3.shape[1])
+    # Get np array of audio at 44.1 kHz in stereo
+    y, sr = librosa.load(fp, sr=44100, mono=False)
 
-# Pad each audio array with zeros to ensure all audio arrays same length
-padded_y = np.transpose(np.pad(y, ((0, 0), (0, max_len - y.shape[1]))))
-padded_y1 = np.transpose(np.pad(y1, ((0, 0), (0, max_len - y1.shape[1]))))
-padded_y2 = np.transpose(np.pad(y2, ((0, 0), (0, max_len - y2.shape[1]))))
-padded_y3 = np.transpose(np.pad(y3, ((0, 0), (0, max_len - y3.shape[1]))))
-print(padded_y.shape)
+    # Get max length of column 2 of audio arrays for padding shorter songs (most samples = longest song)
+    max_len = 4351282 * 2
+    padded_y = None
+    if y.shape[1] > max_len:
+        padded_y = np.transpose(y[:max_len])
+    # Pad each audio array with zeros to ensure all audio arrays same length
+    else:
+        padded_y = np.transpose(np.pad(y, ((0, 0), (0, max_len - y.shape[1]))))
 
-tr = [padded_y, padded_y1, padded_y2, padded_y3]
-for idx, t in enumerate(tr):
-    np.save(f"C:/Users/jappa/Repos/senior_project/preprocessed_audio/{idx}", t)
+    np.save(f"C:/Users/jappa/Repos/senior_project/preprocessed_audio/{file_name.split('.')[0]}", padded_y)

@@ -1,7 +1,5 @@
-import sounddevice as sd
 import numpy as np
 import mkr_audio
-from threading import Thread
 
 # Y = padded_y + padded_y1 + padded_y3
 
@@ -21,10 +19,15 @@ class AudioPlayer():
         # To hold volume levels
         self.drum_vol = self.bass_vol = self.melody_vol = self.vocal_vol = 1
 
-        self.drum_tr = np.load("./preprocessed_audio/0.npy")
-        self.melody_tr = np.load("./preprocessed_audio/1.npy")
-        self.melody_tr2 = np.load("./preprocessed_audio/2.npy")
-        self.vocal_tr = np.load("./preprocessed_audio/3.npy")
+        self.drum_tr_1 = np.load("./preprocessed_audio/doechii_maybe_drum.npy")
+        self.melody_tr_1 = np.load("./preprocessed_audio/doechii_maybe_strings.npy")
+        self.melody_tr_2 = np.load("./preprocessed_audio/doechii_maybe_strings.npy")
+        self.vocal_tr_1 = np.load("./preprocessed_audio/doechii_maybe_vocal.npy")
+        self.vocal_tr_2 = np.load("./preprocessed_audio/doechii_sos_vocal.npy")
+        self.melody_tr_3 = np.load("./preprocessed_audio/doechii_sos_melody.npy")
+        self.drum_tr_2 = np.load("./preprocessed_audio/doechii_sos_drum.npy")
+        self.bass_tr_1 = np.load("./preprocessed_audio/doechii_sos_bass.npy")
+
 
         self.mixer = mkr_audio.Mixer()
         self.channel0 = self.mixer.channel(0)
@@ -44,10 +47,13 @@ class AudioPlayer():
         self.channel14 = self.mixer.channel(14)
         self.channel15 = self.mixer.channel(15)
 
-        self.channel0.load(self.drum_tr)
-        self.channel2.load(self.melody_tr)
-        self.channel3.load(self.vocal_tr)
-        self.channel6.load(self.melody_tr2)
+        self.channel0.load(self.drum_tr_1)
+        self.channel1.load(self.bass_tr_1)
+        self.channel3.load(self.vocal_tr_1)
+        self.channel4.load(self.drum_tr_2)
+        self.channel6.load(self.melody_tr_2)
+        self.channel7.load(self.vocal_tr_2)
+        self.channel10.load(self.melody_tr_3)
 
     def hit_play(self):
         self.mixer.play()

@@ -14,7 +14,7 @@ try:
     # The -n htdemucs flag specifies the model
     # The -o flag specifies the output directory
     # The -d cpu flag forces CPU usage
-    command = ['python', '-m', 'demucs.separate', '-n', 'htdemucs', '-o', output_dir, '-d', 'cpu', input_audio]
+    command = ['python', '-m', 'demucs.separate', '--mp3', '-n', 'htdemucs', '-o', output_dir, '-d', 'cpu', input_audio]
     
     # Run the command and print the output
     subprocess.run(command, check=True)
