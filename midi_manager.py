@@ -55,7 +55,7 @@ class MIDIManager():
     def set_pad_colors(self):
         for k, v in self.pad_color_map.items():
             # Set channel 0 to 127 for light on or 0 for light off
-            self.out_port.send(mido.Message('note_on', channel=0, note=k, velocity=127))
+            self.out_port.send(mido.Message('note_on', channel=0, note=k, velocity=0))
             self.out_port.send(mido.Message('note_on', channel=1, note=k, velocity=v[0]))
             self.out_port.send(mido.Message('note_on', channel=2, note=k, velocity=v[1]))
             self.out_port.send(mido.Message('note_on', channel=3, note=k, velocity=v[2]))
