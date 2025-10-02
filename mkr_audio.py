@@ -1,4 +1,4 @@
-# This class acts as a 
+# This class takes the place of the PyGame mixer so audio handling can work intuitively in audio manager (16 channel mixer, volume, start/stop, etc.)
 
 import numpy as np
 import sounddevice as sd

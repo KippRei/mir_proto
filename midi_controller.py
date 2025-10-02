@@ -95,6 +95,8 @@ class MIDIController(QObject):
 
     # Logic for changing pad color map values to 'ON' for button pressed and changes color of all other buttons in column to 'OFF'
     def change_pad_color(self):
+        if not self.midi_manager.ports_open:
+            return
         for k in self.channel_map.keys():
             self.pad_color_map[k+36] = self.midi_manager.get_pad_on_off_color('on') if self.channel_map[k]['is_playing'] is True else self.midi_manager.get_pad_on_off_color('off')
     

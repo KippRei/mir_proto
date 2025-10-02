@@ -23,20 +23,27 @@ PAD_ON_COLOR = RED
 
 class MIDIManager():
     def __init__(self):
+        self.ports_open = False
         self.pad_color_map = {i: PAD_OFF_COLOR for i in range(36, 52)} # Creates map that holds pad/note # as key and [r,g,b] as value
         self.in_port = self.out_port = None
         self.midi_msg_queue = Queue() # queue to hold midi messages
         self.__open_ports('ATOM 0', 'ATOM 1')
-        self.__set_midi_mode()
-        self.set_pad_colors()
-        # Start midi listener in separate thread
-        msg_thread = threading.Thread(target=self.__listener, daemon=True)
-        msg_thread.start()     
+        if self.ports_open:
+            self.__set_midi_mode()
+            self.set_pad_colors()
+            # Start midi listener in separate thread
+            msg_thread = threading.Thread(target=self.__listener, daemon=True)
+            msg_thread.start()     
 
     # Opens MIDI ports
     def __open_ports(self, in_port_name, out_port_name):
-        self.in_port = mido.open_input(in_port_name)
-        self.out_port = mido.open_output(out_port_name)
+        try:
+            self.in_port = mido.open_input(in_port_name)
+            self.out_port = mido.open_output(out_port_name)
+            self.ports_open = True
+        except:
+            print("Ports not found")
+
 
     # Sets MIDI mode of physical controller (needs to be in native mode to control pad colors)
     def __set_midi_mode(self):

@@ -1,5 +1,6 @@
 import numpy as np
 import mkr_audio
+import os
 
 # Y = padded_y + padded_y1 + padded_y3
 
@@ -18,17 +19,24 @@ class AudioPlayer():
     def __init__(self):
         # To hold volume levels
         self.drum_vol = self.bass_vol = self.melody_vol = self.vocal_vol = 1
+        self.songs_map = {}
 
-        self.drum_tr_1 = np.load("./preprocessed_audio/doechii_maybe_drum.npy")
-        self.melody_tr_1 = np.load("./preprocessed_audio/doechii_maybe_strings.npy")
-        self.melody_tr_2 = np.load("./preprocessed_audio/doechii_maybe_strings.npy")
-        self.vocal_tr_1 = np.load("./preprocessed_audio/doechii_maybe_vocal.npy")
-        self.vocal_tr_2 = np.load("./preprocessed_audio/doechii_sos_vocal.npy")
-        self.melody_tr_3 = np.load("./preprocessed_audio/doechii_sos_melody.npy")
-        self.drum_tr_2 = np.load("./preprocessed_audio/doechii_sos_drum.npy")
-        self.bass_tr_1 = np.load("./preprocessed_audio/doechii_sos_bass.npy")
+        # Load all prerprocessed songs into songs map
+        song_dir = './preprocessed_audio'
+        song_dir_encoded = os.fsencode(song_dir)
+        for file_name in os.listdir(song_dir_encoded):
+            path = f"{song_dir}/{os.fsdecode(file_name)}"
+            curr_dir = os.fsencode(path)
+            if os.path.isdir(curr_dir):
+                self.songs_map[os.fsdecode(file_name)] = {}
+                for file in os.listdir(curr_dir):
+                    song_file_name = os.fsdecode(file)
+                    self.songs_map[os.fsdecode(file_name)].update({song_file_name.split('.')[0]: np.load(f"{path}/{song_file_name}")})
 
-
+        for k, v in self.songs_map.items():
+            print(k)
+            for key in v:
+                print(key)
         self.mixer = mkr_audio.Mixer()
         self.channel0 = self.mixer.channel(0)
         self.channel1 = self.mixer.channel(1)
@@ -46,14 +54,6 @@ class AudioPlayer():
         self.channel13 = self.mixer.channel(13)
         self.channel14 = self.mixer.channel(14)
         self.channel15 = self.mixer.channel(15)
-
-        self.channel0.load(self.drum_tr_1)
-        self.channel1.load(self.bass_tr_1)
-        self.channel3.load(self.vocal_tr_1)
-        self.channel4.load(self.drum_tr_2)
-        self.channel6.load(self.melody_tr_2)
-        self.channel7.load(self.vocal_tr_2)
-        self.channel10.load(self.melody_tr_3)
 
     def hit_play(self):
         self.mixer.play()
@@ -119,5 +119,63 @@ class AudioPlayer():
         return self.mixer.channel_map
     
 
-# if __name__ == "__main__":
-#     a = AudioPlayer()
+    ''' TODO: Move logic the checks whether stem type exists (drum, bass, etc.) into button drag/drop.
+        The track load correctly but if the stem type doesn't exist it will still look like it's loaded
+        because the button doesn't check to see if stem exists before changing button text'''
+    def load_track(self, title, channel):
+        song = self.songs_map[title]
+        match channel:
+            case 0:
+                if 'drum' in song:
+                    self.channel0.load(song['drum'])
+            case 1:
+                if 'bass' in song:
+                    self.channel1.load(song['bass'])
+            case 2:
+                if 'melody' in song:
+                    self.channel2.load(song['melody'])
+            case 3:
+                if 'vocal' in song:
+                    self.channel3.load(song['vocal'])
+                    
+            case 4:
+                if 'drum' in song:
+                    self.channel4.load(song['drum'])
+            case 5:
+                if 'bass' in song:
+                    self.channel5.load(song['bass'])
+            case 6:
+                if 'melody' in song:
+                    self.channel6.load(song['melody'])
+            case 7:
+                if 'vocal' in song:
+                    self.channel7.load(song['vocal'])
+                    
+            case 8:
+                if 'drum' in song:
+                    self.channel8.load(song['drum'])
+            case 9:
+                if 'bass' in song:
+                    self.channel9.load(song['bass'])
+            case 10:
+                if 'melody' in song:
+                    self.channel10.load(song['melody'])
+            case 11:
+                if 'vocal' in song:
+                    self.channel11.load(song['vocal'])
+                    
+            case 12:
+                if 'drum' in song:
+                    self.channel12.load(song['drum'])
+            case 13:
+                if 'bass' in song:
+                    self.channel13.load(song['bass'])
+            case 14:
+                if 'melody' in song:
+                    self.channel14.load(song['melody'])
+            case 15:
+                if 'vocal' in song:
+                    self.channel15.load(song['vocal'])
+            
+            case _:
+                pass

@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QSlider, QWidget, QGridLayout, QListWidget, QFileDialog
+from PyQt6.QtWidgets import QSlider, QWidget, QGridLayout, QListWidget, QFileDialog, QPushButton
 from PyQt6.QtCore import Qt
 from qt_square_button import SquareButton
 from qt_song_list_widget import SongListItem
@@ -45,7 +45,7 @@ class QtGui(QWidget):
         layout = QGridLayout()
 
         # Open/Drag and drop preprocess box
-        self.preprocess_btn = SquareButton('Select file for preprocessing')
+        self.preprocess_btn = QPushButton('Select file for preprocessing')
         self.preprocess_btn.setFixedSize(200, 200)
         self.preprocess_btn.clicked.connect(self.open_file_to_preprocess)
         layout.addWidget(self.preprocess_btn, 0, 0, alignment=Qt.AlignmentFlag.AlignVCenter)
@@ -56,8 +56,9 @@ class QtGui(QWidget):
         self.song_list.setDragEnabled(True)
         self.song_arr = []
         song_dir = os.fsencode('./preprocessed_audio')
-        for idx, file in enumerate(os.listdir(song_dir)):
-            self.song_arr.append(SongListItem(os.fsdecode(file).split('.')[0], self.song_list))
+        # Add name of each stem to song list
+        for idx, dir_name in enumerate(os.listdir(song_dir)):
+            self.song_arr.append(SongListItem(os.fsdecode(dir_name), self.song_list))
         layout.addWidget(self.song_list, 1, 0, 4, 1, alignment=Qt.AlignmentFlag.AlignLeft)
 
         self.drum_vol = QSlider()
@@ -79,32 +80,32 @@ class QtGui(QWidget):
 
 
         for idx, key in enumerate(self.drum_buttons.keys()):
-            self.drum_buttons[key] = SquareButton('Drums')
+            self.drum_buttons[key] = SquareButton('Drums', key - 36, self.audio_manager)
             # self.drum_buttons[key].setFixedSize(100, 100)
             layout.addWidget(self.drum_buttons[key], idx + 1, 1)
         for idx, key in enumerate(self.bass_buttons.keys()):
-            self.bass_buttons[key] = SquareButton('Bass')
+            self.bass_buttons[key] = SquareButton('Bass', key - 36, self.audio_manager)
             self.bass_buttons[key].setAcceptDrops(True)
             # self.bass_buttons[key].setFixedSize(100, 100)
             layout.addWidget(self.bass_buttons[key], idx + 1, 2)
         for idx, key in enumerate(self.melody_buttons.keys()):
-            self.melody_buttons[key] = SquareButton('Melody')
+            self.melody_buttons[key] = SquareButton('Melody', key - 36, self.audio_manager)
             self.melody_buttons[key].setAcceptDrops(True)
             # self.melody_buttons[key].setFixedSize(100, 100)
             layout.addWidget(self.melody_buttons[key], idx + 1, 3)
         for idx, key in enumerate(self.vocal_buttons.keys()):
-            self.vocal_buttons[key] = SquareButton('Vocal')
+            self.vocal_buttons[key] = SquareButton('Vocal', key - 36, self.audio_manager)
             self.vocal_buttons[key].setAcceptDrops(True)
             # self.vocal_buttons[key].setFixedSize(100, 100)
             layout.addWidget(self.vocal_buttons[key], idx + 1, 4)
 
         self.set_button_color()
 
-        layout.setColumnStretch(0, 1)
-        layout.setColumnStretch(1, 1)
-        layout.setColumnStretch(2, 1)
-        layout.setColumnStretch(3, 1)
-        layout.setColumnStretch(4, 1)
+        # layout.setColumnStretch(0, 1)
+        # layout.setColumnStretch(1, 1)
+        # layout.setColumnStretch(2, 1)
+        # layout.setColumnStretch(3, 1)
+        # layout.setColumnStretch(4, 1)
         layout.setRowStretch(0, 1)
         layout.setRowStretch(1, 2)
         layout.setRowStretch(2, 2)
