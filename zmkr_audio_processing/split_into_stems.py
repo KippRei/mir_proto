@@ -15,14 +15,15 @@ def split(file_name) -> str:
         # The -n htdemucs flag specifies the model
         # The -o flag specifies the output directory
         # The -d cpu flag forces CPU usage
-        command = ['python', '-m', 'demucs.separate', '--mp3', '-n', 'htdemucs', '-o', output_dir, '-d', 'cpu', input_audio]
+        # command = ['python', '-m', 'demucs.separate', '--mp3', '-n', 'htdemucs', '-o', output_dir, '-d', 'cpu', input_audio]
+        command = ['python', '-m', 'demucs.separate', '--mp3', '-n', 'htdemucs', '-o', output_dir, '-d', 'cuda', input_audio]
         
         # Run the command and print the output
         subprocess.run(command, check=True)
         
-        print(f"Stem separation complete. Stems are in the '{output_dir}/htdemucs/{os.path.splitext(os.path.basename(input_audio))[0]}' directory.")
+        print(f"Stem separation complete. Stems are in the '{os.getcwd()}{output_dir}/htdemucs/{os.path.splitext(os.path.basename(input_audio))[0]}' directory.")
         
-        return "f{output_dir}/htdemucs/{os.path.splitext(os.path.basename(input_audio))[0]}"
+        return f"{os.getcwd()}/{output_dir}/htdemucs/{os.path.splitext(os.path.basename(input_audio))[0]}"
 
     except FileNotFoundError:
         print("Error: The 'demucs' command was not found. Please ensure Demucs is installed and in your PATH.")

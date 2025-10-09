@@ -8,13 +8,6 @@ class AudioPreprocessor():
     def process_audio(self, file_name: str):
         tempo = bpm_detection.get_bpm(file_name)
         stems_to_process = split_into_stems.split(file_name)
-        stem_types = [
-            'bass',
-            'drums',
-            'other',
-            'vocals'
-        ]
+
         if stems_to_process is not None:
-            for type in stem_types:
-                fp = stems_to_process + "/" + type + ".mp3"
-                change_tempo(fp)
+            change_tempo.change_tempo(stems_to_process, tempo)
