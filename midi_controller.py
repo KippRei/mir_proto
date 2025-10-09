@@ -15,7 +15,7 @@ class MIDIController(QObject):
         self.midi_timer.setInterval(10)
         self.midi_timer.timeout.connect(self.process_midi_messages)
         self.midi_timer.start()
-        self.change_pad_color() # TODO: just calling this because tracks autoplay right now, remove after testing
+        self.change_pad_color()
 
     # Controls what happens when MIDI message is received
     def process_midi_messages(self):

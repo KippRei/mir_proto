@@ -29,8 +29,8 @@ class Mixer():
             self.audio_thread = threading.Thread(target=self.__start_playing, daemon=True)
             self.audio_thread.start()
     
-    def stop(self):
-        if self.is_playing:
+    def stop(self): 
+        if self.is_playing: 
                 self.is_playing = False
                 self.__stop_playing()
 
@@ -38,6 +38,7 @@ class Mixer():
         with sd.OutputStream(samplerate=44100, callback=self.audio_callback, channels=2) as stream:
             # The audio will loop so we want it to continue playing until user presses stop
             while True and self.is_playing:
+                # print(stream.latency)
                 pass
 
     def __stop_playing(self):
@@ -50,20 +51,20 @@ class Mixer():
         if self.stop_event.is_set():
             raise sd.CallbackStop
         
-        with self.mix_lock:
-            # TODO: prevents buffer overflow but need to loop intelligently (on beat) rather than like this
-            if self.curr_frame + frames > self.currently_playing.shape[0]:
-                self.curr_frame = 0
+        # with self.mix_lock:
+        # TODO: prevents buffer overflow but need to loop intelligently (on beat) rather than like this
+        if self.curr_frame + frames > self.currently_playing.shape[0]:
+            self.curr_frame = 0
 
-            temp_buffer = np.zeros(shape=(frames, 2), dtype=float)
-            for v in self.channel_map.values():
-                if v['is_playing']:
-                    temp_buffer[:frames] += (v['channel'].get_data()[self.curr_frame:self.curr_frame + frames] * v['volume'])
-        
-            np.clip(temp_buffer, -1.0, 1.0, out=outdata) # clamps between -1.0 and 1.0 to prevent audio clipping
+        temp_buffer = np.zeros(shape=(frames, 2), dtype=float)
+        for v in self.channel_map.values():
+            if v['is_playing']:
+                temp_buffer[:frames] += (v['channel'].get_data()[self.curr_frame:self.curr_frame + frames] * v['volume'])
+    
+        np.clip(temp_buffer, -1.0, 1.0, out=outdata) # clamps between -1.0 and 1.0 to prevent audio clipping
 
-            outdata[:] = temp_buffer
-            self.curr_frame += frames
+        outdata[:] = temp_buffer
+        self.curr_frame += frames
         
 class _Channel():
     def __init__(self, channel_num, mixer):
@@ -85,7 +86,6 @@ class _Channel():
         mix_update_thread = threading.Thread(target=self.mixer.update_playing, daemon=True)
         mix_update_thread.start()
 
-    # TODO: implement volume controls
     def get_volume(self):
         return self.volume
     

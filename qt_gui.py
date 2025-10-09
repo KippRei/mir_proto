@@ -5,10 +5,11 @@ from qt_song_list_widget import SongListItem
 import os
 
 class QtGui(QWidget):
-    def __init__(self, audio_manager, midi_manager):
+    def __init__(self, audio_manager, midi_manager, audio_preprocessor):
         super().__init__()
         self.audio_manager = audio_manager
         self.midi_manager = midi_manager
+        self.audio_preprocessor = audio_preprocessor
         self.color_map = self.midi_manager.get_pad_color_map()
 
         # Button maps = {MIDI controller pad num: QPushButton}
@@ -123,7 +124,7 @@ class QtGui(QWidget):
         if file_dialog.exec():
             selected_files = file_dialog.selectedFiles()
             for f in selected_files:
-                print(f)
+                self.audio_preprocessor.process_audio(f)
 
     # Sets position of volume slider
     def set_vol_slider(self, name):

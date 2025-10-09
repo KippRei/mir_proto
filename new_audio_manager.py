@@ -33,10 +33,6 @@ class AudioPlayer():
                     song_file_name = os.fsdecode(file)
                     self.songs_map[os.fsdecode(file_name)].update({song_file_name.split('.')[0]: np.load(f"{path}/{song_file_name}")})
 
-        for k, v in self.songs_map.items():
-            print(k)
-            for key in v:
-                print(key)
         self.mixer = mkr_audio.Mixer()
         self.channel0 = self.mixer.channel(0)
         self.channel1 = self.mixer.channel(1)
@@ -118,64 +114,80 @@ class AudioPlayer():
     def get_channel_map(self):
         return self.mixer.channel_map
     
-
-    ''' TODO: Move logic the checks whether stem type exists (drum, bass, etc.) into button drag/drop.
-        The track load correctly but if the stem type doesn't exist it will still look like it's loaded
-        because the button doesn't check to see if stem exists before changing button text'''
-    def load_track(self, title, channel):
+    def load_track(self, title, channel) -> bool:
+        for t in self.songs_map:
+            print(t)
+        if title not in self.songs_map.keys():
+            return False
         song = self.songs_map[title]
         match channel:
             case 0:
                 if 'drum' in song:
                     self.channel0.load(song['drum'])
+                    return True
             case 1:
                 if 'bass' in song:
                     self.channel1.load(song['bass'])
+                    return True
             case 2:
                 if 'melody' in song:
                     self.channel2.load(song['melody'])
+                    return True
             case 3:
                 if 'vocal' in song:
                     self.channel3.load(song['vocal'])
+                    return True
                     
             case 4:
                 if 'drum' in song:
                     self.channel4.load(song['drum'])
+                    return True
             case 5:
                 if 'bass' in song:
                     self.channel5.load(song['bass'])
+                    return True
             case 6:
                 if 'melody' in song:
                     self.channel6.load(song['melody'])
+                    return True
             case 7:
                 if 'vocal' in song:
                     self.channel7.load(song['vocal'])
+                    return True
                     
             case 8:
                 if 'drum' in song:
                     self.channel8.load(song['drum'])
+                    return True
             case 9:
                 if 'bass' in song:
                     self.channel9.load(song['bass'])
+                    return True
             case 10:
                 if 'melody' in song:
                     self.channel10.load(song['melody'])
+                    return True
             case 11:
                 if 'vocal' in song:
                     self.channel11.load(song['vocal'])
+                    return True
                     
             case 12:
                 if 'drum' in song:
                     self.channel12.load(song['drum'])
+                    return True
             case 13:
                 if 'bass' in song:
                     self.channel13.load(song['bass'])
+                    return True
             case 14:
                 if 'melody' in song:
                     self.channel14.load(song['melody'])
+                    return True
             case 15:
                 if 'vocal' in song:
                     self.channel15.load(song['vocal'])
+                    return True
             
             case _:
-                pass
+                return False

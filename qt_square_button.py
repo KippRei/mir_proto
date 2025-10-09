@@ -27,6 +27,6 @@ class SquareButton(QPushButton):
             event.acceptProposedAction()
     
     def dropEvent(self, event):
-        self.setText(event.source().selectedItems()[0].text())
-        self.audio_manager.load_track(self.text(), self.track_number)
+        if self.audio_manager.load_track(event.source().selectedItems()[0].text(), self.track_number):
+            self.setText(event.source().selectedItems()[0].text())
         event.accept()
