@@ -43,24 +43,16 @@ class QtGui(QWidget):
         self.__init_ui()
 
     def __init_ui(self):
-        layout = QGridLayout()
+        self.layout = QGridLayout()
 
         # Open/Drag and drop preprocess box
         self.preprocess_btn = QPushButton('Select file for preprocessing')
         self.preprocess_btn.setFixedSize(200, 200)
         self.preprocess_btn.clicked.connect(self.open_file_to_preprocess)
-        layout.addWidget(self.preprocess_btn, 0, 0, alignment=Qt.AlignmentFlag.AlignVCenter)
+        self.layout.addWidget(self.preprocess_btn, 0, 0, alignment=Qt.AlignmentFlag.AlignVCenter)
 
         # List of songs/stems
-        # TODO: Refactor this!
-        self.song_list = QListWidget()
-        self.song_list.setDragEnabled(True)
-        self.song_arr = []
-        song_dir = os.fsencode('./preprocessed_audio')
-        # Add name of each stem to song list
-        for idx, dir_name in enumerate(os.listdir(song_dir)):
-            self.song_arr.append(SongListItem(os.fsdecode(dir_name), self.song_list))
-        layout.addWidget(self.song_list, 1, 0, 4, 1, alignment=Qt.AlignmentFlag.AlignLeft)
+        self.update_song_list()
 
         self.drum_vol = QSlider()
         self.bass_vol = QSlider()
@@ -74,46 +66,56 @@ class QtGui(QWidget):
             # slider.setStyleSheet('QSlider::groove:vertical {background: purple}')
             self.set_vol_slider(name)
 
-        layout.addWidget(self.drum_vol, 0, 1, alignment=Qt.AlignmentFlag.AlignHCenter)
-        layout.addWidget(self.bass_vol, 0, 2, alignment=Qt.AlignmentFlag.AlignHCenter)
-        layout.addWidget(self.melody_vol, 0, 3, alignment=Qt.AlignmentFlag.AlignHCenter)
-        layout.addWidget(self.vocal_vol, 0, 4, alignment=Qt.AlignmentFlag.AlignHCenter)
+        self.layout.addWidget(self.drum_vol, 0, 1, alignment=Qt.AlignmentFlag.AlignHCenter)
+        self.layout.addWidget(self.bass_vol, 0, 2, alignment=Qt.AlignmentFlag.AlignHCenter)
+        self.layout.addWidget(self.melody_vol, 0, 3, alignment=Qt.AlignmentFlag.AlignHCenter)
+        self.layout.addWidget(self.vocal_vol, 0, 4, alignment=Qt.AlignmentFlag.AlignHCenter)
 
 
         for idx, key in enumerate(self.drum_buttons.keys()):
             self.drum_buttons[key] = SquareButton('Drums', key - 36, self.audio_manager)
             # self.drum_buttons[key].setFixedSize(100, 100)
-            layout.addWidget(self.drum_buttons[key], idx + 1, 1)
+            self.layout.addWidget(self.drum_buttons[key], idx + 1, 1)
         for idx, key in enumerate(self.bass_buttons.keys()):
             self.bass_buttons[key] = SquareButton('Bass', key - 36, self.audio_manager)
             self.bass_buttons[key].setAcceptDrops(True)
             # self.bass_buttons[key].setFixedSize(100, 100)
-            layout.addWidget(self.bass_buttons[key], idx + 1, 2)
+            self.layout.addWidget(self.bass_buttons[key], idx + 1, 2)
         for idx, key in enumerate(self.melody_buttons.keys()):
             self.melody_buttons[key] = SquareButton('Melody', key - 36, self.audio_manager)
             self.melody_buttons[key].setAcceptDrops(True)
             # self.melody_buttons[key].setFixedSize(100, 100)
-            layout.addWidget(self.melody_buttons[key], idx + 1, 3)
+            self.layout.addWidget(self.melody_buttons[key], idx + 1, 3)
         for idx, key in enumerate(self.vocal_buttons.keys()):
             self.vocal_buttons[key] = SquareButton('Vocal', key - 36, self.audio_manager)
             self.vocal_buttons[key].setAcceptDrops(True)
             # self.vocal_buttons[key].setFixedSize(100, 100)
-            layout.addWidget(self.vocal_buttons[key], idx + 1, 4)
+            self.layout.addWidget(self.vocal_buttons[key], idx + 1, 4)
 
         self.set_button_color()
 
-        # layout.setColumnStretch(0, 1)
-        # layout.setColumnStretch(1, 1)
-        # layout.setColumnStretch(2, 1)
-        # layout.setColumnStretch(3, 1)
-        # layout.setColumnStretch(4, 1)
-        layout.setRowStretch(0, 1)
-        layout.setRowStretch(1, 2)
-        layout.setRowStretch(2, 2)
-        layout.setRowStretch(3, 2)
-        layout.setRowStretch(4, 2)
+        # self.layout.setColumnStretch(0, 1)
+        # self.layout.setColumnStretch(1, 1)
+        # self.layout.setColumnStretch(2, 1)
+        # self.layout.setColumnStretch(3, 1)
+        # self.layout.setColumnStretch(4, 1)
+        self.layout.setRowStretch(0, 1)
+        self.layout.setRowStretch(1, 2)
+        self.layout.setRowStretch(2, 2)
+        self.layout.setRowStretch(3, 2)
+        self.layout.setRowStretch(4, 2)
 
-        self.setLayout(layout)
+        self.setLayout(self.layout)
+
+    # Updates list of songs
+    def update_song_list(self):
+        self.song_list = QListWidget()
+        self.song_list.setDragEnabled(True)
+        self.song_arr = []
+        # Add name of each stem to song list
+        for song_name in self.audio_manager.get_songs_map():
+            self.song_arr.append(SongListItem(song_name, self.song_list))
+        self.layout.addWidget(self.song_list, 1, 0, 4, 1, alignment=Qt.AlignmentFlag.AlignLeft)
 
     # Open file to preprocess
     def open_file_to_preprocess(self):

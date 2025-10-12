@@ -21,17 +21,7 @@ class AudioPlayer():
         self.drum_vol = self.bass_vol = self.melody_vol = self.vocal_vol = 1
         self.songs_map = {}
 
-        # Load all prerprocessed songs into songs map
-        song_dir = './preprocessed_audio'
-        song_dir_encoded = os.fsencode(song_dir)
-        for file_name in os.listdir(song_dir_encoded):
-            path = f"{song_dir}/{os.fsdecode(file_name)}"
-            curr_dir = os.fsencode(path)
-            if os.path.isdir(curr_dir):
-                self.songs_map[os.fsdecode(file_name)] = {}
-                for file in os.listdir(curr_dir):
-                    song_file_name = os.fsdecode(file)
-                    self.songs_map[os.fsdecode(file_name)].update({song_file_name.split('.')[0]: np.load(f"{path}/{song_file_name}")})
+        self.load_preprocessed_songs()
 
         self.mixer = mkr_audio.Mixer()
         self.channel0 = self.mixer.channel(0)
@@ -50,6 +40,19 @@ class AudioPlayer():
         self.channel13 = self.mixer.channel(13)
         self.channel14 = self.mixer.channel(14)
         self.channel15 = self.mixer.channel(15)
+
+    def load_preprocessed_songs(self):
+        # Load all preprocessed songs into songs map
+        song_dir = './preprocessed_audio'
+        song_dir_encoded = os.fsencode(song_dir)
+        for file_name in os.listdir(song_dir_encoded):
+            path = f"{song_dir}/{os.fsdecode(file_name)}"
+            curr_dir = os.fsencode(path)
+            if os.path.isdir(curr_dir):
+                self.songs_map[os.fsdecode(file_name)] = {}
+                for file in os.listdir(curr_dir):
+                    song_file_name = os.fsdecode(file)
+                    self.songs_map[os.fsdecode(file_name)].update({song_file_name.split('.')[0]: np.load(f"{path}/{song_file_name}")})
 
     def hit_play(self):
         self.mixer.play()
@@ -113,6 +116,9 @@ class AudioPlayer():
             
     def get_channel_map(self):
         return self.mixer.channel_map
+    
+    def get_songs_map(self):
+        return self.songs_map
     
     def load_track(self, title, channel) -> bool:
         for t in self.songs_map:

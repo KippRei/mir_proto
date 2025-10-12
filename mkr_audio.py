@@ -35,7 +35,7 @@ class Mixer():
                 self.__stop_playing()
 
     def __start_playing(self):
-        with sd.OutputStream(samplerate=44100, callback=self.audio_callback, channels=2) as stream:
+        with sd.OutputStream(samplerate=44100, callback=self.audio_callback, channels=2, latency=0.30) as stream:
             # The audio will loop so we want it to continue playing until user presses stop
             while True and self.is_playing:
                 # print(stream.latency)

@@ -15,7 +15,7 @@ file_names = [
 for file_name in file_names:
     fp = f"{file_folder}/{file_name}"
 
-    # Get np array of audio at 44.1 kHz in stereo
+    # Get nparray of audio at 44.1 kHz in stereo
     y, sr = librosa.load(fp, sr=44100, mono=False)
 
     # Get max length of column 2 of audio arrays for padding shorter songs (most samples = longest song)

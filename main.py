@@ -9,14 +9,15 @@ from PyQt6.QtWidgets import QApplication
 
 app = QApplication(sys.argv)
 audio_manager = AudioPlayer()
-audio_preprocessor = zmkr.AudioPreprocessor()
 midi_manager = MIDIManager()
-gui_window = qt_gui.QtGui(audio_manager, midi_manager, audio_preprocessor)
 midi_controller = MIDIController(audio_manager, midi_manager)
+audio_preprocessor = zmkr.AudioPreprocessor(audio_manager)
+gui_window = qt_gui.QtGui(audio_manager, midi_manager, audio_preprocessor)
 
 midi_controller.quit_signal.connect(app.quit)
 midi_controller.change_vol_signal.connect(gui_window.set_vol_slider)
 midi_controller.change_pad_color_signal.connect(gui_window.set_button_color)
+audio_preprocessor.new_audio_preprocessed.connect(gui_window.update_song_list)
 
 gui_window.show()
 sys.exit(app.exec())
