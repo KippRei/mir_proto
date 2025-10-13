@@ -2,7 +2,7 @@ import soundfile as sf
 import pyrubberband as pyrb
 import os
 
-def change_tempo(folder_to_process, old_tempo, old_start_beat):
+def change_tempo(folder_to_process, old_tempo):
     #change tempo to predefined tempo (128 maybe?)
     NEW_TEMPO = 128
 
@@ -15,14 +15,12 @@ def change_tempo(folder_to_process, old_tempo, old_start_beat):
 
     # New tempo
     amt_to_stretch = NEW_TEMPO / old_tempo
-    new_start_beat = old_start_beat * amt_to_stretch
 
     for in_filename in in_filenames:
         out_name = in_filename.split('/')[-1]
         out_filename = f'{os.getcwd()}/beat_key_matched/{folder_to_process.split('/')[-1]}/{out_name}'
         out_dir = os.path.dirname(out_filename)
         os.makedirs(out_dir, exist_ok=True)
-
 
         y3, sr3 = sf.read(in_filename)  
         output_file = out_filename
@@ -34,4 +32,4 @@ def change_tempo(folder_to_process, old_tempo, old_start_beat):
 
         # C:\Users\jappa\Repos\senior_project\beat_key_matched
 
-    return f'{os.getcwd()}/beat_key_matched/{folder_to_process.split('/')[-1]}', new_start_beat
+    return f'{os.getcwd()}/beat_key_matched/{folder_to_process.split('/')[-1]}', amt_to_stretch

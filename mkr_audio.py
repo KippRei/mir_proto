@@ -12,6 +12,8 @@ class Mixer():
         self.channel_map = {}
         self.stop_event = threading.Event() # this signal is for stopping audio_thread
         self.currently_playing = np.zeros(shape=(4351282 * 2, 2), dtype=float)
+        MEASURES = 32
+        self.LOOP_MAX = round(MEASURES * ((60 / 128) * 4) * 44100)
         for i in range(0, channels):
             self.channel_map[i] = {
                 'channel': _Channel(i, self),
@@ -59,12 +61,18 @@ class Mixer():
         temp_buffer = np.zeros(shape=(frames, 2), dtype=float)
         for v in self.channel_map.values():
             if v['is_playing']:
-                temp_buffer[:frames] += (v['channel'].get_data()[self.curr_frame:self.curr_frame + frames] * v['volume'])
+                song_data = v['channel'].get_data()
+                curr_frame = self.curr_frame
+                for i in range(0, frames):
+                    if curr_frame % self.LOOP_MAX == 0:
+                        curr_frame = 0
+                    temp_buffer[i, :] += song_data[curr_frame, :]
+                    curr_frame += 1
     
         np.clip(temp_buffer, -1.0, 1.0, out=outdata) # clamps between -1.0 and 1.0 to prevent audio clipping
 
         outdata[:] = temp_buffer
-        self.curr_frame += frames
+        self.curr_frame = (self.curr_frame + frames) % self.LOOP_MAX
         
 class _Channel():
     def __init__(self, channel_num, mixer):

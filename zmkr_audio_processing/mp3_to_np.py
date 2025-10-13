@@ -22,8 +22,7 @@ def convert(file_folder, start_beat):
 
         # Get nparray of audio at 44.1 kHz in stereo
         y, sr = librosa.load(fp, sr=44100, mono=False)
-        start_frame = round(start_beat * sr)
-        print(start_frame)
+        start_frame = start_beat
         # Get max length of column 2 of audio arrays for padding shorter songs (most samples = longest song)
         max_len = 4351282
         padded_y = None

@@ -121,8 +121,6 @@ class AudioPlayer():
         return self.songs_map
     
     def load_track(self, title, channel) -> bool:
-        for t in self.songs_map:
-            print(t)
         if title not in self.songs_map.keys():
             return False
         song = self.songs_map[title]

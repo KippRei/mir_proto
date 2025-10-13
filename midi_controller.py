@@ -20,7 +20,7 @@ class MIDIController(QObject):
     # Controls what happens when MIDI message is received
     def process_midi_messages(self):
         for msg in self.midi_manager.get_messages():
-            print(msg)
+            # print(msg)
             match msg.type:
                 case 'note_on':
                     match msg.note:
