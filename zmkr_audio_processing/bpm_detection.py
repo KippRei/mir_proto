@@ -44,11 +44,5 @@ def get_bpm(audio_path) -> int:
     total_bpm_samples = pow(tempo_map[best_tempo], 2) + pow(prev_bpm_count, 2) + pow(next_bpm_count, 2)
     summed_tempos = (best_tempo * pow(tempo_map[best_tempo], 2)) + (prev_bpm * pow(prev_bpm_count, 2)) + (next_bpm * pow(next_bpm_count, 2))
     average_tempo = summed_tempos / total_bpm_samples
-    for key, val in tempo_map.items():
-        print(f'BPM: {key}, Count: {val}')
-        if val > max_count:
-            max_count = val
-            tempo = key
 
-    print(f'{average_tempo}')  
     return average_tempo, downbeats

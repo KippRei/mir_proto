@@ -8,7 +8,7 @@ class Mixer():
     curr_frame = 0
     def __init__(self, channels: int= 16):
         self.is_playing = False # flag for whether audio is playing or not
-        self.mix_lock = threading.Lock()
+        self.mix_lock = threading.Lock() # NOTE: Might not need this
         self.channel_map = {}
         self.stop_event = threading.Event() # this signal is for stopping audio_thread
         self.currently_playing = np.zeros(shape=(4351282 * 2, 2), dtype=float)

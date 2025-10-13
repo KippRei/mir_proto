@@ -1,4 +1,5 @@
 from PyQt6.QtWidgets import QPushButton
+from PyQt6.QtCore import QSize
 
 class SquareButton(QPushButton):
     def __init__(self, text, track_number, audio_manager):
@@ -7,20 +8,18 @@ class SquareButton(QPushButton):
         self.track_number = track_number
         self.setAcceptDrops(True)
     
-    # def resizeEvent(self, event):
-    #     size = self.sizeHint()
-    #     print(f"Width: {size.width()} Height: {size.height()}")
+    def resizeEvent(self, event):
+        size = event.size()
+        side = min(size.width(), size.height())
 
-    #     size.setHeight(int((size.width() * 16) / 9))
-    #     print(f"Width: {size.width()} Height: {size.height()}")
-
-    #     self.updateGeometry()
-    #     return super().resizeEvent(event)
+        self.resize(side, side)
+        return super().resizeEvent(event)
 
     def sizeHint(self):
-        size = super().sizeHint()
-        size.setHeight(int((size.width() * 16) / 9))
-        return size
+        # size = super().sizeHint()
+        # size.setHeight(int((size.width() * 16) / 9))
+        # return size
+        return QSize(120, 120)
     
     def dragEnterEvent(self, event):
         if event:

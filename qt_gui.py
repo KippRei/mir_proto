@@ -39,7 +39,7 @@ class QtGui(QWidget):
         }
         self.buttons_arr = [self.drum_buttons, self.bass_buttons, self.melody_buttons, self.vocal_buttons]
         self.setWindowTitle("InsideOut")
-        self.setGeometry(0, 0, 800, 600)
+        self.setMinimumSize(800, 600)
         self.__init_ui()
 
     def __init_ui(self):
@@ -74,31 +74,27 @@ class QtGui(QWidget):
 
         for idx, key in enumerate(self.drum_buttons.keys()):
             self.drum_buttons[key] = SquareButton('Drums', key - 36, self.audio_manager)
-            # self.drum_buttons[key].setFixedSize(100, 100)
-            self.layout.addWidget(self.drum_buttons[key], idx + 1, 1)
+            self.layout.addWidget(self.drum_buttons[key], idx + 1, 1, alignment=Qt.AlignmentFlag.AlignHCenter)
+
         for idx, key in enumerate(self.bass_buttons.keys()):
             self.bass_buttons[key] = SquareButton('Bass', key - 36, self.audio_manager)
-            self.bass_buttons[key].setAcceptDrops(True)
-            # self.bass_buttons[key].setFixedSize(100, 100)
-            self.layout.addWidget(self.bass_buttons[key], idx + 1, 2)
+            self.layout.addWidget(self.bass_buttons[key], idx + 1, 2, alignment=Qt.AlignmentFlag.AlignHCenter)
+
         for idx, key in enumerate(self.melody_buttons.keys()):
             self.melody_buttons[key] = SquareButton('Melody', key - 36, self.audio_manager)
-            self.melody_buttons[key].setAcceptDrops(True)
-            # self.melody_buttons[key].setFixedSize(100, 100)
-            self.layout.addWidget(self.melody_buttons[key], idx + 1, 3)
+            self.layout.addWidget(self.melody_buttons[key], idx + 1, 3, alignment=Qt.AlignmentFlag.AlignHCenter)
+
         for idx, key in enumerate(self.vocal_buttons.keys()):
             self.vocal_buttons[key] = SquareButton('Vocal', key - 36, self.audio_manager)
-            self.vocal_buttons[key].setAcceptDrops(True)
-            # self.vocal_buttons[key].setFixedSize(100, 100)
-            self.layout.addWidget(self.vocal_buttons[key], idx + 1, 4)
+            self.layout.addWidget(self.vocal_buttons[key], idx + 1, 4, alignment=Qt.AlignmentFlag.AlignHCenter)
 
         self.set_button_color()
 
-        # self.layout.setColumnStretch(0, 1)
-        # self.layout.setColumnStretch(1, 1)
-        # self.layout.setColumnStretch(2, 1)
-        # self.layout.setColumnStretch(3, 1)
-        # self.layout.setColumnStretch(4, 1)
+        self.layout.setColumnStretch(0, 1)
+        self.layout.setColumnStretch(1, 1)
+        self.layout.setColumnStretch(2, 1)
+        self.layout.setColumnStretch(3, 1)
+        self.layout.setColumnStretch(4, 1)
         self.layout.setRowStretch(0, 1)
         self.layout.setRowStretch(1, 2)
         self.layout.setRowStretch(2, 2)
