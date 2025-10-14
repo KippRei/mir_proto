@@ -3,6 +3,8 @@
 import numpy as np
 import sounddevice as sd
 import threading
+# import audiotsm
+# from audiotsm.io.array import ArrayReader, ArrayWriter
 
 class Mixer():
     curr_frame = 0
@@ -55,34 +57,43 @@ class Mixer():
         
         # with self.mix_lock:
         # TODO: prevents buffer overflow but need to loop intelligently (on beat) rather than like this
-        if self.curr_frame + frames > self.currently_playing.shape[0]:
-            self.curr_frame = 0
+        # if self.curr_frame + frames > self.currently_playing.shape[0]:
+        #     self.curr_frame = 0
 
         temp_buffer = np.zeros(shape=(frames, 2), dtype=float)
         for v in self.channel_map.values():
             if v['is_playing']:
-                song_data = v['channel'].get_data()
+                song_data = v['channel'].get_next_block(frames)
+
                 curr_frame = self.curr_frame
                 for i in range(0, frames):
                     if curr_frame % self.LOOP_MAX == 0:
                         curr_frame = 0
-                    temp_buffer[i, :] += song_data[curr_frame, :]
+                    temp_buffer[i, :] += song_data[curr_frame, :] * v['volume']
                     curr_frame += 1
     
         np.clip(temp_buffer, -1.0, 1.0, out=outdata) # clamps between -1.0 and 1.0 to prevent audio clipping
 
         outdata[:] = temp_buffer
         self.curr_frame = (self.curr_frame + frames) % self.LOOP_MAX
-        
+
 class _Channel():
     def __init__(self, channel_num, mixer):
         self.channel_num = channel_num
         self.mixer = mixer
         self.volume = 1
+        # self.tsm = audiotsm.phasevocoder(channels=2, speed=0.5)
+        # self.tsm_reader = None
+        # self.tsm_writer = ArrayWriter(channels=2)
+        self.output_buffer = np.zeros((0, 2), dtype=float)
         self.data = np.zeros(shape=(4351282, 2), dtype=float)
 
     def load(self, data=np.ndarray):
         self.data = data
+        # self.tsm_reader = ArrayReader(np.transpose(data))
+        # self.tsm.run(self.tsm_reader, self.tsm_writer)
+        # self.tsm_writer = ArrayWriter(channels=2)
+        # self.tsm.clear()
 
     def on(self):
         self.mixer.channel_map[self.channel_num]['is_playing'] = True
@@ -99,6 +110,25 @@ class _Channel():
     
     def set_volume(self, vol):
         self.volume = vol
+
+    # def get_next_block(self, frames):
+    #     while self.tsm_writer.data.shape[1] < frames:
+    #         self.tsm.read_from(self.tsm_reader)
+    #         self.tsm.write_to(self.tsm_writer)
+
+    #     # if self.tsm_reader.empty:
+    #     #     # Flush remaining buffered output
+    #     #     self.tsm.flush_to(self.tsm_writer) 
+            
+    #     #     # Reset TSM state for a clean loop transition
+    #     #     self.tsm.clear() 
+            
+    #     #     # Reset reader position to loop from the beginning
+    #     #     self.tsm_reader.position = 0 
+
+    #     output_data = self.tsm_writer.data[:, :frames]
+
+    #     return output_data.T
 
     # For testing
     def get_data(self):
