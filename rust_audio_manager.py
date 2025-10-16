@@ -42,11 +42,11 @@ class AudioPlayer():
 
     # Get track volumes (GUI)
     def get_track_vol(self, name):
-        self.mixer.get_track_vol(name)
+        return self.mixer.get_track_vol(name)
             
-    def get_channel_map(self):
+    def get_channel_list_on_off(self):
         # TODO
-        return {}
+        return self.mixer.get_channel_list_on_off()
     
     # Gets song list for displaying songs (GUI)
     def get_song_list(self):

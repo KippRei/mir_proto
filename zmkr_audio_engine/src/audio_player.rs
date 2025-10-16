@@ -1,18 +1,22 @@
 use pyo3::prelude::*;
 use cpal::{Data, FromSample, OutputCallbackInfo, Sample, SampleFormat};
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
-use core::f64::consts::PI as PPI;
+use pyo3::types::PyList;
+use core::f32::consts::PI;
+use core::time;
 use std::collections::HashMap;
 use std::fmt::Debug;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use std::{thread, vec};
 use numpy::ndarray::{Array2, Ix2};
 use numpy::{PyReadonlyArray};
 
+static mut PHASE: f32 = 0f32;
+
 #[pyclass]
 pub struct Mixer {
-    is_playing: bool,
+    is_playing: Arc<Mutex<bool>>,
     song_map: HashMap<String, HashMap<String, Arc<Array2<f64>>>>,
     channel_map: Vec<_Channel>,
     current_frame: usize,
@@ -25,7 +29,7 @@ impl Mixer {
     #[new]
     pub fn new() -> Self {
         Mixer {
-            is_playing: false,
+            is_playing: Arc::new(Mutex::new(false)),
             song_map: HashMap::new(),
             channel_map: Mixer::_init_channels(16),
             current_frame: 0,
@@ -134,8 +138,23 @@ impl Mixer {
         Ok(*track_vol)
     }
 
+    pub fn get_channel_list_on_off(&self) -> PyResult<Vec<bool>> {
+        let mut return_list = Vec::new();
+        for val in &self.channel_map {
+            return_list.push(val.is_playing);
+        }
+        Ok(return_list)
+    }
+
     pub fn play(&mut self) {
-        // Play selected tracks
+        let mut is_playing_lock = self.is_playing.lock().unwrap();
+        *is_playing_lock = true;
+        Mixer::_play(self);
+    }
+
+    pub fn stop(&mut self) {
+        let mut is_playing_lock = self.is_playing.lock().unwrap();
+        *is_playing_lock = false;
     }
 }
 
@@ -157,6 +176,76 @@ impl Mixer {
         }
         new_vol_map
     }
+
+    pub fn _play(&self) {
+        let host = cpal::default_host();
+        let device = host.default_output_device().expect("No output device available.");
+        let mut supported_configs_range = device.supported_output_configs().expect("Error querying configs.");
+        let supported_config = supported_configs_range.find(|config| {
+            matches!(
+                config.sample_format(),
+                cpal::SampleFormat::F32 | cpal::SampleFormat::I16 | cpal::SampleFormat::U16
+            )
+        }).expect("No valid sample format found.");
+        let complete_config = supported_config.with_max_sample_rate();
+        let sample_format = supported_config.sample_format();
+        let config: cpal::StreamConfig = complete_config.into();
+        let err_fn = |err| eprintln!("Error occured while trying to play: {}", err);
+
+        let is_playing_clone = self.is_playing.clone();
+        thread::spawn(move || {
+            let stream = match sample_format {
+                SampleFormat::F32 => device.build_output_stream(&config, Mixer::data_callback::<f32>, err_fn, None),
+                SampleFormat::I16 => device.build_output_stream(&config, Mixer::data_callback::<i16>, err_fn, None),
+                SampleFormat::U16 => device.build_output_stream(&config, Mixer::data_callback::<u16>, err_fn, None),
+                sample_format => panic!("Unsupported sample format '{sample_format}'")
+            }.unwrap();
+
+            stream.play().expect("Error playing.");
+
+            while *is_playing_clone.lock().unwrap() {
+                thread::sleep(Duration::from_millis(10));
+            }
+        });
+    }
+
+    // fn data_callback<T: Sample>(data: &mut [T], _: &cpal::OutputCallbackInfo) {
+    //     for sample in data.iter_mut() {
+    //         *sample = Sample::EQUILIBRIUM;
+    //     }
+    // }
+
+fn data_callback<T: Sample + FromSample<f64>>(
+    data: &mut [T], 
+    _: &cpal::OutputCallbackInfo
+) {
+    
+    // Parameters for the low tone
+    const FREQUENCY: f32 = 100.0; // Low tone at 100 Hz
+    const SAMPLE_RATE: f32 = 44100.0; // Standard assumption
+    const AMPLITUDE: f32 = 0.5; // Half volume
+    // Phase increment per sample (2 * PI * frequency / sample_rate)
+    let phase_increment = FREQUENCY * 2.0 * PI / SAMPLE_RATE;
+
+    // Use unsafe block to access the static mutable variable
+    unsafe {
+        for sample in data.iter_mut() {
+            // 1. Calculate the current sample value (sine wave)
+            let value = (PHASE.sin() * AMPLITUDE) as f64;
+            
+            // 2. Convert the f64 value to the stream's required sample format (T)
+            *sample = T::from_sample(value);
+
+            // 3. Advance the phase
+            PHASE += phase_increment;
+            
+            // 4. Wrap phase around 2*PI to prevent float precision loss
+            if PHASE >= 2.0 * PI {
+                PHASE -= 2.0 * PI;
+            }
+        }
+    }
+}
 }
 
 struct _Channel {

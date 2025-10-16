@@ -9,7 +9,7 @@ class MIDIController(QObject):
         super().__init__()
         self.midi_manager = midi_manager
         self.audio_manager = audio_manager
-        self.channel_map = self.audio_manager.get_channel_map()
+        self.channel_on_off_list = self.audio_manager.get_channel_list_on_off()
         self.pad_color_map = self.midi_manager.get_pad_color_map()
         self.midi_timer = QTimer()
         self.midi_timer.setInterval(10)
@@ -97,8 +97,8 @@ class MIDIController(QObject):
     def change_pad_color(self):
         if not self.midi_manager.ports_open:
             return
-        for k in self.channel_map.keys():
-            self.pad_color_map[k+36] = self.midi_manager.get_pad_on_off_color('on') if self.channel_map[k]['is_playing'] is True else self.midi_manager.get_pad_on_off_color('off')
+        for idx, is_playing in enumerate(self.audio_manager.get_channel_list_on_off()):
+            self.pad_color_map[idx+36] = self.midi_manager.get_pad_on_off_color('on') if is_playing else self.midi_manager.get_pad_on_off_color('off')
     
         # Tell midi manager to update colors
         self.midi_manager.set_pad_colors()
