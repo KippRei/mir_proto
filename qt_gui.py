@@ -109,7 +109,7 @@ class QtGui(QWidget):
         self.song_list.setDragEnabled(True)
         self.song_arr = []
         # Add name of each stem to song list
-        for song_name in self.audio_manager.get_songs_map():
+        for song_name in self.audio_manager.get_song_list():
             self.song_arr.append(SongListItem(song_name, self.song_list))
         self.layout.addWidget(self.song_list, 1, 0, 4, 1, alignment=Qt.AlignmentFlag.AlignLeft)
 

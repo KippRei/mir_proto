@@ -26,6 +26,8 @@ class SquareButton(QPushButton):
             event.acceptProposedAction()
     
     def dropEvent(self, event):
+        # Get title from event source text and track number from this button
+        # Change text of button to song name if loaded successfully
         if self.audio_manager.load_track(event.source().selectedItems()[0].text(), self.track_number):
             self.setText(event.source().selectedItems()[0].text())
         event.accept()
