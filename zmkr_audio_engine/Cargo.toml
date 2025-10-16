@@ -1,0 +1,15 @@
+[package]
+name = "zmkr_audio_engine"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "zmkr_audio_engine"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = { version = "0.22", features = ["extension-module"] }
+numpy = "0.22" 
+crossbeam-channel = "0.5"
+cpal = "0.15.3"
+ndarray = "0.17.0"

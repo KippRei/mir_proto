@@ -63,7 +63,7 @@ class Mixer():
         temp_buffer = np.zeros(shape=(frames, 2), dtype=float)
         for v in self.channel_map.values():
             if v['is_playing']:
-                song_data = v['channel'].get_next_block(frames)
+                song_data = v['channel'].get_data()
 
                 curr_frame = self.curr_frame
                 for i in range(0, frames):

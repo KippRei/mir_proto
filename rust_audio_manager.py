@@ -20,27 +20,27 @@ class AudioPlayer():
     def __init__(self):
         # To hold volume levels
         self.drum_vol = self.bass_vol = self.melody_vol = self.vocal_vol = 1
-        self.songs_map = {}
 
+        self.mixer = zmkr_audio_engine.Mixer()
         self.load_preprocessed_songs()
 
-        self.mixer = mkr_audio.Mixer()
-        self.channel0 = self.mixer.channel(0)
-        self.channel1 = self.mixer.channel(1)
-        self.channel2 = self.mixer.channel(2)
-        self.channel3 = self.mixer.channel(3)
-        self.channel4 = self.mixer.channel(4)
-        self.channel5 = self.mixer.channel(5)
-        self.channel6 = self.mixer.channel(6)
-        self.channel7 = self.mixer.channel(7)
-        self.channel8 = self.mixer.channel(8)
-        self.channel9 = self.mixer.channel(9)
-        self.channel10 = self.mixer.channel(10)
-        self.channel11 = self.mixer.channel(11)
-        self.channel12 = self.mixer.channel(12)
-        self.channel13 = self.mixer.channel(13)
-        self.channel14 = self.mixer.channel(14)
-        self.channel15 = self.mixer.channel(15)
+
+        # self.channel0 = self.mixer.channel(0)
+        # self.channel1 = self.mixer.channel(1)
+        # self.channel2 = self.mixer.channel(2)
+        # self.channel3 = self.mixer.channel(3)
+        # self.channel4 = self.mixer.channel(4)
+        # self.channel5 = self.mixer.channel(5)
+        # self.channel6 = self.mixer.channel(6)
+        # self.channel7 = self.mixer.channel(7)
+        # self.channel8 = self.mixer.channel(8)
+        # self.channel9 = self.mixer.channel(9)
+        # self.channel10 = self.mixer.channel(10)
+        # self.channel11 = self.mixer.channel(11)
+        # self.channel12 = self.mixer.channel(12)
+        # self.channel13 = self.mixer.channel(13)
+        # self.channel14 = self.mixer.channel(14)
+        # self.channel15 = self.mixer.channel(15)
 
     def load_preprocessed_songs(self):
         # Load all preprocessed songs into songs map
@@ -50,10 +50,12 @@ class AudioPlayer():
             path = f"{song_dir}/{os.fsdecode(file_name)}"
             curr_dir = os.fsencode(path)
             if os.path.isdir(curr_dir):
-                self.songs_map[os.fsdecode(file_name)] = {}
                 for file in os.listdir(curr_dir):
                     song_file_name = os.fsdecode(file)
-                    self.songs_map[os.fsdecode(file_name)].update({song_file_name.split('.')[0]: np.load(f"{path}/{song_file_name}")})
+                    self.mixer.load_preprocessed_song(os.fsdecode(file_name), song_file_name.split('.')[0], np.load(f"{path}/{song_file_name}").astype(np.float64))
+
+        self.mixer.print_song_map()
+        # self.mixer.play("The BoykinZ - Step Right Up (Official Music Video)")
 
     def hit_play(self):
         self.mixer.play()
@@ -116,10 +118,10 @@ class AudioPlayer():
                 return self.vocal_vol
             
     def get_channel_map(self):
-        return self.mixer.channel_map
+        return {}
     
     def get_songs_map(self):
-        return self.songs_map
+        return {}
     
     def load_track(self, title, channel) -> bool:
         if title not in self.songs_map.keys():

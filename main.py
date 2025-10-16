@@ -1,12 +1,15 @@
 import sys
 import functools # might need for partial
-from new_audio_manager import AudioPlayer
+from rust_audio_manager import AudioPlayer
 from midi_manager import MIDIManager
 from midi_controller import MIDIController
 from zmkr_audio_processing import audio_preprocessor as zmkr
 import qt_gui
 from PyQt6.QtWidgets import QApplication
 
+# print('starting play')
+# zmkr_audio_engine.play()
+# print('play over')
 app = QApplication(sys.argv)
 audio_manager = AudioPlayer()
 midi_manager = MIDIManager()
