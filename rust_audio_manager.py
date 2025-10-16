@@ -8,6 +8,7 @@ class AudioPlayer():
         # To hold volume levels
         self.mixer = zmkr_audio_engine.Mixer()
         self.load_preprocessed_songs()
+        self.mixer.add_to_playback("apollo")
 
     # Loads all the preprocessed songs into mixer
     def load_preprocessed_songs(self):
@@ -20,7 +21,7 @@ class AudioPlayer():
             if os.path.isdir(curr_dir):
                 for file in os.listdir(curr_dir):
                     song_file_name = os.fsdecode(file)
-                    self.mixer.load_preprocessed_song(os.fsdecode(file_name), song_file_name.split('.')[0], np.load(f"{path}/{song_file_name}").astype(np.float64))
+                    self.mixer.load_preprocessed_song(os.fsdecode(file_name), song_file_name.split('.')[0], np.load(f"{path}/{song_file_name}").astype(np.float32))
 
         # self.mixer.print_song_map()
 

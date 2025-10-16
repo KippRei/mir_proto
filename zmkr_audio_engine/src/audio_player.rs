@@ -1,3 +1,4 @@
+use ndarray::Array;
 use pyo3::prelude::*;
 use cpal::{Data, FromSample, OutputCallbackInfo, Sample, SampleFormat};
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
@@ -8,18 +9,23 @@ use std::collections::HashMap;
 use std::fmt::Debug;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
-use std::{thread, vec};
+use std::{f32, thread, vec};
 use numpy::ndarray::{Array2, Ix2};
 use numpy::{PyReadonlyArray};
 
 static mut PHASE: f32 = 0f32;
 
+struct PlaybackState {
+    data: Array2<f32>,
+    curr_frame: usize
+}
+
 #[pyclass]
 pub struct Mixer {
     is_playing: Arc<Mutex<bool>>,
-    song_map: HashMap<String, HashMap<String, Arc<Array2<f64>>>>,
+    song_map: HashMap<String, HashMap<String, Arc<Array2<f32>>>>,
     channel_map: Vec<_Channel>,
-    current_frame: usize,
+    playback: Arc<Mutex<PlaybackState>>,
     song_list: Vec<String>,
     track_volumes: HashMap<String, f32>
 }
@@ -32,7 +38,7 @@ impl Mixer {
             is_playing: Arc::new(Mutex::new(false)),
             song_map: HashMap::new(),
             channel_map: Mixer::_init_channels(16),
-            current_frame: 0,
+            playback: Arc::new(Mutex::new(PlaybackState { data: Array2::zeros((4351282 * 2, 2)), curr_frame: 0 })),
             song_list: Vec::<String>::new(),
             track_volumes: Mixer::_init_track_volumes()
         }
@@ -42,7 +48,7 @@ impl Mixer {
         &mut self,
         song_name: String,
         track_name: String,
-        data: PyReadonlyArray<f64, Ix2>
+        data: PyReadonlyArray<f32, Ix2>
     ) -> PyResult<()> {
             if !self.song_list.contains(&song_name) {
                 self.song_list.push(song_name.clone());
@@ -52,9 +58,25 @@ impl Mixer {
                 .entry(song_name)
                 .or_insert_with(HashMap::new);
             outer_song_map.insert(track_name, rust_arr);
-
+            self.print_song_map();
             Ok(())
-    }   
+    }  
+
+    // Note: For testing playback
+    pub fn add_to_playback(&self, name: String) {
+        let song_info = self.song_map.get(&name).unwrap();
+        let track = song_info.get("drum").clone().unwrap();
+        let playback_clone = self.playback.clone();
+        let mut playback_lock = playback_clone.lock().unwrap(); 
+        let playback_data = &mut playback_lock.data;
+        let mut count_idx: usize = 0;
+        for i in track.iter() {
+            if count_idx % 2 == 0 {
+                playback_data[[count_idx, 0]] = *i;
+            }
+            count_idx += 1;
+        }
+    } 
 
     pub fn get_song_list(&self) -> PyResult<Vec<String>> {
         Ok(self.song_list.clone())
@@ -146,13 +168,13 @@ impl Mixer {
         Ok(return_list)
     }
 
-    pub fn play(&mut self) {
+    pub fn play(&self) {
         let mut is_playing_lock = self.is_playing.lock().unwrap();
         *is_playing_lock = true;
         Mixer::_play(self);
     }
 
-    pub fn stop(&mut self) {
+    pub fn stop(&self) {
         let mut is_playing_lock = self.is_playing.lock().unwrap();
         *is_playing_lock = false;
     }
@@ -193,11 +215,22 @@ impl Mixer {
         let err_fn = |err| eprintln!("Error occured while trying to play: {}", err);
 
         let is_playing_clone = self.is_playing.clone();
+        let playback_clone = self.playback.clone();
+
         thread::spawn(move || {
             let stream = match sample_format {
-                SampleFormat::F32 => device.build_output_stream(&config, Mixer::data_callback::<f32>, err_fn, None),
-                SampleFormat::I16 => device.build_output_stream(&config, Mixer::data_callback::<i16>, err_fn, None),
-                SampleFormat::U16 => device.build_output_stream(&config, Mixer::data_callback::<u16>, err_fn, None),
+                SampleFormat::F32 => device.build_output_stream(&config, move |data: &mut [f32],  _: &cpal::OutputCallbackInfo| {
+                    let mut playback_state = playback_clone.lock().unwrap();
+                    Mixer::real_time_audio(data, &mut playback_state);
+                }, err_fn, None),
+                SampleFormat::I16 => device.build_output_stream(&config, move |data: &mut [i16],  _: &cpal::OutputCallbackInfo| {
+                    let mut playback_state = playback_clone.lock().unwrap();
+                    Mixer::real_time_audio(data, &mut playback_state);
+                }, err_fn, None),
+                SampleFormat::U16 => device.build_output_stream(&config, move |data: &mut [u16],  _: &cpal::OutputCallbackInfo| {
+                    let mut playback_state = playback_clone.lock().unwrap();
+                    Mixer::real_time_audio(data, &mut playback_state);
+                }, err_fn, None),
                 sample_format => panic!("Unsupported sample format '{sample_format}'")
             }.unwrap();
 
@@ -209,49 +242,28 @@ impl Mixer {
         });
     }
 
-    // fn data_callback<T: Sample>(data: &mut [T], _: &cpal::OutputCallbackInfo) {
-    //     for sample in data.iter_mut() {
-    //         *sample = Sample::EQUILIBRIUM;
-    //     }
-    // }
+    fn real_time_audio<T: Sample> (data: &mut[T], playback_state: &mut PlaybackState)
+    where T: Sample + FromSample<f32> {
+        let playback_state_data = &playback_state.data;
+        let mut curr_frame = playback_state.curr_frame;
+        for out_frame in data.chunks_mut(2) {
+            let left = playback_state_data[[curr_frame, 0]];
+            let right = playback_state_data[[curr_frame, 1]];
 
-fn data_callback<T: Sample + FromSample<f64>>(
-    data: &mut [T], 
-    _: &cpal::OutputCallbackInfo
-) {
-    
-    // Parameters for the low tone
-    const FREQUENCY: f32 = 100.0; // Low tone at 100 Hz
-    const SAMPLE_RATE: f32 = 44100.0; // Standard assumption
-    const AMPLITUDE: f32 = 0.5; // Half volume
-    // Phase increment per sample (2 * PI * frequency / sample_rate)
-    let phase_increment = FREQUENCY * 2.0 * PI / SAMPLE_RATE;
+            out_frame[0] = T::from_sample(left);
+            out_frame[1] = T::from_sample(right);
 
-    // Use unsafe block to access the static mutable variable
-    unsafe {
-        for sample in data.iter_mut() {
-            // 1. Calculate the current sample value (sine wave)
-            let value = (PHASE.sin() * AMPLITUDE) as f64;
-            
-            // 2. Convert the f64 value to the stream's required sample format (T)
-            *sample = T::from_sample(value);
-
-            // 3. Advance the phase
-            PHASE += phase_increment;
-            
-            // 4. Wrap phase around 2*PI to prevent float precision loss
-            if PHASE >= 2.0 * PI {
-                PHASE -= 2.0 * PI;
-            }
+            curr_frame += 1;
         }
+        playback_state.curr_frame = curr_frame;
     }
-}
+
 }
 
 struct _Channel {
     is_playing: bool,
     volume: f32,
-    data: Option<Arc<Array2<f64>>>,
+    data: Option<Arc<Array2<f32>>>,
 }
 
 impl _Channel {
@@ -263,7 +275,7 @@ impl _Channel {
         }
     }
 
-    fn load_data(&mut self, new_data: Arc<Array2<f64>>) {
+    fn load_data(&mut self, new_data: Arc<Array2<f32>>) {
         self.data = Some(new_data);
     }
 
