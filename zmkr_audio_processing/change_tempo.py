@@ -4,7 +4,7 @@ import os
 
 def change_tempo(folder_to_process, old_tempo):
     #change tempo to predefined tempo (128 maybe?)
-    NEW_TEMPO = 128
+    NEW_TEMPO = 124
 
     in_filenames = [
         f'{folder_to_process}/vocals.mp3',

@@ -27,7 +27,7 @@ class AudioPreprocessor(QObject):
         # TODO: Refactor this!
         # Trim silence from beginning of drum track to find good starting point (start_beat)
         # TODO: Figure out a way to get first beat using drums maybe? Currently, it is not consistent
-        y, sr = librosa.load(f'{tempo_processed_folder}/drums.mp3', sr=44100)
+        y, sr = librosa.load(f'{tempo_processed_folder}/drums.mp3', sr=48000)
         _, start_beat = librosa.effects.trim(y=y, top_db=15)
         print(f'Start beat: {start_beat}')
 
@@ -35,15 +35,15 @@ class AudioPreprocessor(QObject):
         min_dist_between = float('inf')
         for idx in range(len(downbeats)):
             # print(f'Stretch: {amt_to_stretch}')
-            stretched_downbeat_sample_num = round((downbeats[idx] / amt_tempo_changed) * 44100)
+            stretched_downbeat_sample_num = round((downbeats[idx] / amt_tempo_changed) * 48000)
             print(f'Downbeat Time: {downbeats[idx]}, Stretched Downbeat Sample: {stretched_downbeat_sample_num}')
             curr_dist_between = start_beat[0] - stretched_downbeat_sample_num
             if abs(curr_dist_between) < min_dist_between:
                 print(f'Curr dist between: {curr_dist_between}')
                 if curr_dist_between < -10000:
-                    closest_downbeat = round((downbeats[idx + 1] / amt_tempo_changed) * 44100)
+                    closest_downbeat = round((downbeats[idx + 1] / amt_tempo_changed) * 48000)
                 else:
-                    closest_downbeat = round((downbeats[idx] / amt_tempo_changed) * 44100)
+                    closest_downbeat = round((downbeats[idx] / amt_tempo_changed) * 48000)
 
                 min_dist_between = abs(curr_dist_between)
 
