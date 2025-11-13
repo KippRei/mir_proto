@@ -33,6 +33,6 @@ def convert(file_folder, start_beat):
             # TODO: Need to ensure correct start frame when padding
             padded_y = np.transpose(np.pad(y, ((0, 0), (0, max_len - y.shape[1]))))
 
-        dest_folder = f"C:/Users/jappa/Repos/senior_project/preprocessed_audio/{file_folder.split('/')[-1]}"
+        dest_folder = f"{os.getcwd()}/preprocessed_audio/{file_folder.split('/')[-1]}"
         os.makedirs(dest_folder, exist_ok=True)
         np.save(f"{dest_folder}/{out_file_names[idx]}", padded_y)

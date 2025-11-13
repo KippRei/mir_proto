@@ -4,6 +4,8 @@ class MIDIController(QObject):
     quit_signal = pyqtSignal()
     change_vol_signal = pyqtSignal(str)
     change_pad_color_signal = pyqtSignal()
+    change_tempo_signal = pyqtSignal(int)
+    change_playing_signal = pyqtSignal(bool)
 
     def __init__(self, audio_manager, midi_manager):
         super().__init__()
@@ -56,6 +58,7 @@ class MIDIController(QObject):
                             self.audio_manager.play_channel(14)
                         case 51:
                             self.audio_manager.play_channel(15)
+                            
 
                     self.change_pad_color()
 
@@ -85,13 +88,24 @@ class MIDIController(QObject):
                             elif msg.value == 65:
                                 self.audio_manager.adj_track_vol('vocal', -0.05)
                             self.change_vol_signal.emit('vocal')
-                        # Stop button
+                        
+                        # Stop/Start buttons
                         case 111:
                             if msg.value == 127:
                                 self.audio_manager.hit_stop()
+                                self.change_playing_signal.emit(False)
                         case 109:
                             if msg.value == 127:
                                 self.audio_manager.hit_play()
+                                self.change_playing_signal.emit(True)
+
+                        # Tempo (Nav - Up/Down on usb controller)
+                        case 87:
+                            if msg.value == 127:
+                                self.change_tempo_signal.emit(1)
+                        case 89:
+                            if msg.value == 127:
+                                self.change_tempo_signal.emit(-1)
 
     # Logic for changing pad color map values to 'ON' for button pressed and changes color of all other buttons in column to 'OFF'
     def change_pad_color(self):

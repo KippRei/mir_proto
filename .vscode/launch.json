@@ -1,0 +1,20 @@
+// .vscode/launch.json
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch Python with Rust Debugging (CodeLLDB)",
+            "type": "lldb",
+            "request": "launch",
+            "program": "C:\\Python313\\python.exe", // Path to your Python interpreter (e.g., in a virtual environment)
+            "args": [
+                "${file}" // This assumes the Python file you are debugging is the active file
+            ],
+            // Set the working directory to where your script can find your module
+            "cwd": "${workspaceFolder}", 
+            "sourceLanguages": [
+                "rust" // Tell the debugger to look for Rust source files
+            ]
+        }
+    ]
+}

@@ -19,7 +19,7 @@ OLIVE = [64, 64, 0]
 TEAL = [0, 64, 64]
 
 PAD_OFF_COLOR = PURPLE
-PAD_ON_COLOR = RED
+PAD_ON_COLOR = GREEN
 
 class MIDIManager():
     def __init__(self):
@@ -62,10 +62,16 @@ class MIDIManager():
     def set_pad_colors(self):
         for k, v in self.pad_color_map.items():
             # Set channel 0 to 127 for light on or 0 for light off
-            self.out_port.send(mido.Message('note_on', channel=0, note=k, velocity=0))
-            self.out_port.send(mido.Message('note_on', channel=1, note=k, velocity=v[0]))
-            self.out_port.send(mido.Message('note_on', channel=2, note=k, velocity=v[1]))
-            self.out_port.send(mido.Message('note_on', channel=3, note=k, velocity=v[2]))
+            if v == PAD_OFF_COLOR:
+                self.out_port.send(mido.Message('note_on', channel=0, note=k, velocity=127))
+                self.out_port.send(mido.Message('note_on', channel=1, note=k, velocity=v[0]))
+                self.out_port.send(mido.Message('note_on', channel=2, note=k, velocity=v[1]))
+                self.out_port.send(mido.Message('note_on', channel=3, note=k, velocity=v[2]))
+            else:
+                self.out_port.send(mido.Message('note_on', channel=0, note=k, velocity=2))
+                self.out_port.send(mido.Message('note_on', channel=1, note=k, velocity=v[0]))
+                self.out_port.send(mido.Message('note_on', channel=2, note=k, velocity=v[1]))
+                self.out_port.send(mido.Message('note_on', channel=3, note=k, velocity=v[2]))
 
     def get_messages(self):
         while not self.midi_msg_queue.empty():

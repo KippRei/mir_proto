@@ -6,7 +6,7 @@ use audio_player::Mixer;
 
 #[pymodule]
 fn zmkr_audio_engine(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
-    m.add_class::<Mixer>()?; 
+    m.add_class::<Mixer>()?;
 
     Ok(())
 }

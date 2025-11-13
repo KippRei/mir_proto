@@ -1,10 +1,14 @@
-from PyQt6.QtWidgets import QSlider, QWidget, QGridLayout, QListWidget, QFileDialog, QPushButton
+from PyQt6.QtWidgets import QSlider, QWidget, QGridLayout, QListWidget, QFileDialog, QPushButton, QLabel, QLCDNumber
 from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QPixmap, QIcon
 from qt_square_button import SquareButton
 from qt_song_list_widget import SongListItem
 import os
 
 class QtGui(QWidget):
+    PLAY_BTN_PLAYING_IMG = './images/g_playing_edit.png'
+    PLAY_BTN_STOPPED_IMG = './images/g_stopped_edit.png'
+
     def __init__(self, audio_manager, midi_manager, audio_preprocessor):
         super().__init__()
         self.audio_manager = audio_manager
@@ -38,8 +42,10 @@ class QtGui(QWidget):
             39: None
         }
         self.buttons_arr = [self.drum_buttons, self.bass_buttons, self.melody_buttons, self.vocal_buttons]
-        self.setWindowTitle("InsideOut")
+        self.setWindowTitle("Inside Out")
         self.setMinimumSize(800, 600)
+        self.setWindowIcon(QIcon('./images/icon.ico'))
+
         self.__init_ui()
 
     def __init_ui(self):
@@ -47,7 +53,7 @@ class QtGui(QWidget):
 
         # Open/Drag and drop preprocess box
         self.preprocess_btn = QPushButton('Select file for preprocessing')
-        self.preprocess_btn.setFixedSize(200, 200)
+        self.preprocess_btn.setFixedSize(180, 180)
         self.preprocess_btn.clicked.connect(self.open_file_to_preprocess)
         self.layout.addWidget(self.preprocess_btn, 0, 0, alignment=Qt.AlignmentFlag.AlignVCenter)
 
@@ -58,11 +64,14 @@ class QtGui(QWidget):
         self.bass_vol = QSlider()
         self.melody_vol = QSlider()
         self.vocal_vol = QSlider()
+        
         sliders = {'drum': self.drum_vol, 'bass': self.bass_vol, 'melody': self.melody_vol, 'vocal': self.vocal_vol}
         for name, slider in sliders.items():
+            slider.setFixedWidth(70)
             slider.setRange(0, 100)
             slider.setSingleStep(1)
-            slider.setFixedSize(20, 200)
+            # slider.setFixedSize(20, 200)
+            slider.setStyleSheet(self.stylesheet())
             # slider.setStyleSheet('QSlider::groove:vertical {background: purple}')
             self.set_vol_slider(name)
 
@@ -70,7 +79,6 @@ class QtGui(QWidget):
         self.layout.addWidget(self.bass_vol, 0, 2, alignment=Qt.AlignmentFlag.AlignHCenter)
         self.layout.addWidget(self.melody_vol, 0, 3, alignment=Qt.AlignmentFlag.AlignHCenter)
         self.layout.addWidget(self.vocal_vol, 0, 4, alignment=Qt.AlignmentFlag.AlignHCenter)
-
 
         for idx, key in enumerate(self.drum_buttons.keys()):
             self.drum_buttons[key] = SquareButton('Drums', key - 36, self.audio_manager)
@@ -90,6 +98,21 @@ class QtGui(QWidget):
 
         self.set_button_color()
 
+        self.play_btn_img = QLabel(self)
+        pic = QPixmap(self.PLAY_BTN_STOPPED_IMG)
+        self.play_btn_img.setPixmap(pic)
+        self.play_btn_img.setFixedHeight(90)
+        self.play_btn_img.setFixedWidth(180)
+        self.play_btn_img.setScaledContents(True)
+        self.layout.addWidget(self.play_btn_img, 4, 0)
+
+        self.tempo_img = QLCDNumber(self)
+        self.tempo_img.setDigitCount(3)
+        self.tempo_img.display(126)
+        self.tempo_img.setFixedHeight(120)
+        self.tempo_img.setFixedWidth(180)
+        self.layout.addWidget(self.tempo_img, 3, 0)
+
         self.layout.setColumnStretch(0, 1)
         self.layout.setColumnStretch(1, 1)
         self.layout.setColumnStretch(2, 1)
@@ -103,6 +126,68 @@ class QtGui(QWidget):
 
         self.setLayout(self.layout)
 
+    def stylesheet(self):
+        return """
+            QSlider::groove:vertical {
+                background: red;
+                position: absolute; /* absolutely position 4px from the left and right of the widget. setting margins on the widget should work too... */
+                left: 30px; right: 30px;
+                border-radius: 10px;
+            }
+
+            QSlider::handle:vertical {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #000000, stop:1 purple);
+                border: 1px solid purple;
+                height: 8px;
+                width: 18px;
+                margin: 0 -100px; /* handle is placed by default on the contents rect of the groove. Expand outside the groove */
+                border-radius: 10px;
+            }
+
+            QSlider::add-page:vertical {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #000000, stop:1 purple);;
+            }
+
+            QSlider::sub-page:vertical {
+                background: black;
+            }
+
+            QPushButton {
+                border: 2px solid #8f8f91;
+                border-radius: 6px;
+                background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                                stop: 0 #f6f7fa, stop: 1 #dadbde);
+                min-width: 80px;
+            }
+
+            QPushButton:pressed {
+                background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                                stop: 0 #dadbde, stop: 1 #f6f7fa);
+            }
+
+            QPushButton:flat {
+                border: none; /* no border for a flat push button */
+            }
+
+            QPushButton:default {
+                border-color: navy; /* make the default button prominent */
+            }
+        """
+
+    # Changes tempo
+    def set_tempo(self, amt):
+        curr_tempo = int(self.tempo_img.value())
+        self.tempo_img.display(curr_tempo + amt)
+
+    def set_play_btn(self, on_off):
+        if on_off:
+            self.play_btn_img.setPixmap(QPixmap(self.PLAY_BTN_PLAYING_IMG))
+            
+
+        else:
+            self.play_btn_img.setPixmap(QPixmap(self.PLAY_BTN_STOPPED_IMG))
+        
+
     # Updates list of songs
     def update_song_list(self):
         self.song_list = QListWidget()
@@ -111,7 +196,7 @@ class QtGui(QWidget):
         # Add name of each stem to song list
         for song_name in self.audio_manager.get_song_list():
             self.song_arr.append(SongListItem(song_name, self.song_list))
-        self.layout.addWidget(self.song_list, 1, 0, 4, 1, alignment=Qt.AlignmentFlag.AlignLeft)
+        self.layout.addWidget(self.song_list, 1, 0, 2, 1, alignment=Qt.AlignmentFlag.AlignLeft)
 
     # Open file to preprocess
     def open_file_to_preprocess(self):
@@ -123,6 +208,7 @@ class QtGui(QWidget):
             selected_files = file_dialog.selectedFiles()
             for f in selected_files:
                 self.audio_preprocessor.process_audio(f)
+                self.update_song_list()
 
     # Sets position of volume slider
     def set_vol_slider(self, name):
