@@ -50,7 +50,6 @@ impl Mixer {
         let rust_arr = Arc::new(data.as_array().to_owned());
         let outer_song_map = self.song_map.entry(song_name).or_insert_with(HashMap::new);
         outer_song_map.insert(track_name, rust_arr);
-        self.print_song_map();
         Ok(())
     }
 

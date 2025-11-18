@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Python: module zmkr_audio_processing.audio_preprocessor</title>
+</head><body>
+
+<table class="heading">
+<tr class="heading-text decor">
+<td class="title">&nbsp;<br><strong class="title"><a href="zmkr_audio_processing.html" class="white">zmkr_audio_processing</a>.audio_preprocessor</strong></td>
+<td class="extra"><a href=".">index</a><br><a href="file:c%3A%5Cusers%5Cjappa%5Crepos%5Csr_proto%5Cmir_1%5Czmkr_audio_processing%5Caudio_preprocessor.py">c:\users\jappa\repos\sr_proto\mir_1\zmkr_audio_processing\audio_preprocessor.py</a></td></tr></table>
+    <p><span class="code">audio_preprocessor.py<br>
+&nbsp;<br>
+The&nbsp;<a href="#AudioPreprocessor">AudioPreprocessor</a>&nbsp;class&nbsp;handles&nbsp;the&nbsp;preprocessing&nbsp;of&nbsp;audio&nbsp;files.&nbsp;The&nbsp;files<br>
+are&nbsp;separated&nbsp;into&nbsp;stems&nbsp;(drums,&nbsp;bass,&nbsp;melody,&nbsp;vocals),&nbsp;the&nbsp;tempo&nbsp;is&nbsp;analyzed&nbsp;and&nbsp;adjusted<br>
+to&nbsp;a&nbsp;set&nbsp;BPM&nbsp;(126),&nbsp;and&nbsp;then&nbsp;converted&nbsp;and&nbsp;saved&nbsp;as&nbsp;NumPy&nbsp;arrays<br>
+for&nbsp;the&nbsp;audio&nbsp;engine.<br>
+&nbsp;<br>
+Preprocessing&nbsp;is&nbsp;executed&nbsp;in&nbsp;a&nbsp;separate&nbsp;thread&nbsp;to&nbsp;avoid&nbsp;blocking&nbsp;the&nbsp;program.</span></p>
+<p>
+<table class="section">
+<tr class="decor pkg-content-decor heading-text">
+<td class="section-title" colspan=3>&nbsp;<br><strong class="bigsection">Modules</strong></td></tr>
+    
+<tr><td class="decor pkg-content-decor"><span class="code">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td><td>&nbsp;</td>
+<td class="singlecolumn"><table><tr><td class="multicolumn"><a href="zmkr_audio_processing.bpm_detection.html">zmkr_audio_processing.bpm_detection</a><br>
+<a href="zmkr_audio_processing.change_tempo.html">zmkr_audio_processing.change_tempo</a><br>
+</td><td class="multicolumn"><a href="librosa.html">librosa</a><br>
+<a href="zmkr_audio_processing.mp3_to_np.html">zmkr_audio_processing.mp3_to_np</a><br>
+</td><td class="multicolumn"><a href="scipy.signal.html">scipy.signal</a><br>
+<a href="zmkr_audio_processing.split_into_stems.html">zmkr_audio_processing.split_into_stems</a><br>
+</td><td class="multicolumn"><a href="threading.html">threading</a><br>
+</td></tr></table></td></tr></table><p>
+<table class="section">
+<tr class="decor index-decor heading-text">
+<td class="section-title" colspan=3>&nbsp;<br><strong class="bigsection">Classes</strong></td></tr>
+    
+<tr><td class="decor index-decor"><span class="code">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td><td>&nbsp;</td>
+<td class="singlecolumn"><dl>
+<dt class="heading-text"><a href="PyQt6.QtCore.html#QObject">PyQt6.QtCore.QObject</a>(<a href="PyQt6.sip.html#wrapper">PyQt6.sip.wrapper</a>)
+</dt><dd>
+<dl>
+<dt class="heading-text"><a href="zmkr_audio_processing.audio_preprocessor.html#AudioPreprocessor">AudioPreprocessor</a>
+</dt></dl>
+</dd>
+</dl>
+ <p>
+<table class="section">
+<tr class="decor title-decor heading-text">
+<td class="section-title" colspan=3>&nbsp;<br><a name="AudioPreprocessor">class <strong>AudioPreprocessor</strong></a>(<a href="PyQt6.QtCore.html#QObject">PyQt6.QtCore.QObject</a>)</td></tr>
+    
+<tr><td class="decor title-decor" rowspan=2><span class="code">&nbsp;&nbsp;&nbsp;</span></td>
+<td class="decor title-decor" colspan=2><span class="code">Preprocesses&nbsp;audio&nbsp;in&nbsp;a&nbsp;separate&nbsp;thread.<br>
+Once&nbsp;preprocessing&nbsp;is&nbsp;complete&nbsp;a&nbsp;signal&nbsp;is&nbsp;emitted&nbsp;to&nbsp;update&nbsp;song&nbsp;list.<br>&nbsp;</span></td></tr>
+<tr><td>&nbsp;</td>
+<td class="singlecolumn"><dl><dt>Method resolution order:</dt>
+<dd><a href="zmkr_audio_processing.audio_preprocessor.html#AudioPreprocessor">AudioPreprocessor</a></dd>
+<dd><a href="PyQt6.QtCore.html#QObject">PyQt6.QtCore.QObject</a></dd>
+<dd><a href="PyQt6.sip.html#wrapper">PyQt6.sip.wrapper</a></dd>
+<dd><a href="PyQt6.sip.html#simplewrapper">PyQt6.sip.simplewrapper</a></dd>
+<dd><a href="builtins.html#object">builtins.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="AudioPreprocessor-__init__"><strong>__init__</strong></a>(self)</dt><dd><span class="code">Initializes&nbsp;the&nbsp;base&nbsp;class&nbsp;(<a href="PyQt6.QtCore.html#QObject">QObject</a>).</span></dd></dl>
+
+<strong>new_audio_preprocessed</strong> = &lt;unbound PYQT_SIGNAL new_audio_preprocessed()&gt;
+<dl><dt><a name="AudioPreprocessor-process_audio"><strong>process_audio</strong></a>(self, file_name: str)</dt><dd><span class="code">Starts&nbsp;the&nbsp;audio&nbsp;preprocessor&nbsp;in&nbsp;a&nbsp;separate&nbsp;thread.<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+file_name&nbsp;:&nbsp;str<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;user&nbsp;selected&nbsp;file&nbsp;path&nbsp;to&nbsp;the&nbsp;audio&nbsp;file.</span></dd></dl>
+
+<hr>
+Methods inherited from <a href="PyQt6.QtCore.html#QObject">PyQt6.QtCore.QObject</a>:<br>
+<strong>destroyed</strong> = &lt;unbound PYQT_SIGNAL destroyed(QObject*)&gt;
+<strong>objectNameChanged</strong> = &lt;unbound PYQT_SIGNAL objectNameChanged(QString)&gt;
+<hr>
+Static methods inherited from <a href="PyQt6.QtCore.html#QObject">PyQt6.QtCore.QObject</a>:<br>
+<dl><dt><a name="AudioPreprocessor-__getattr__"><strong>__getattr__</strong></a>(...)</dt><dd><span class="code"><a href="#AudioPreprocessor-__getattr__">__getattr__</a>(self,&nbsp;name:&nbsp;Optional[str])&nbsp;-&gt;&nbsp;Any</span></dd></dl>
+
+<dl><dt><a name="AudioPreprocessor-blockSignals"><strong>blockSignals</strong></a>(...)</dt><dd><span class="code"><a href="#AudioPreprocessor-blockSignals">blockSignals</a>(self,&nbsp;b:&nbsp;bool)&nbsp;-&gt;&nbsp;bool</span></dd></dl>
+
+<dl><dt><a name="AudioPreprocessor-childEvent"><strong>childEvent</strong></a>(...)</dt><dd><span class="code"><a href="#AudioPreprocessor-childEvent">childEvent</a>(self,&nbsp;a0:&nbsp;Optional[QChildEvent])</span></dd></dl>
+
+<dl><dt><a name="AudioPreprocessor-children"><strong>children</strong></a>(...)</dt><dd><span class="code"><a href="#AudioPreprocessor-children">children</a>(self)&nbsp;-&gt;&nbsp;list[<a href="PyQt6.QtCore.html#QObject">QObject</a>]</span></dd></dl>
+
+<dl><dt><a name="AudioPreprocessor-connectNotify"><strong>connectNotify</strong></a>(...)</dt><dd><span class="code"><a href="#AudioPreprocessor-connectNotify">connectNotify</a>(self,&nbsp;signal:&nbsp;QMetaMethod)</span></dd></dl>
+
+<dl><dt><a name="AudioPreprocessor-customEvent"><strong>customEvent</strong></a>(...)</dt><dd><span class="code"><a href="#AudioPreprocessor-customEvent">customEvent</a>(self,&nbsp;a0:&nbsp;Optional[QEvent])</span></dd></dl>
+
+<dl><dt><a name="AudioPreprocessor-deleteLater"><strong>deleteLater</strong></a>(...)</dt><dd><span class="code"><a href="#AudioPreprocessor-deleteLater">deleteLater</a>(self)</span></dd></dl>
+
+<dl><dt><a name="AudioPreprocessor-disconnect"><strong>disconnect</strong></a>(...)</dt><dd><span class="code"><a href="#AudioPreprocessor-disconnect">disconnect</a>(a0:&nbsp;QMetaObject.Connection)&nbsp;-&gt;&nbsp;bool<br>
+<a href="#AudioPreprocessor-disconnect">disconnect</a>(self)</span></dd></dl>
+
+<dl><dt><a name="AudioPreprocessor-disconnectNotify"><strong>disconnectNotify</strong></a>(...)</dt><dd><span class="code"><a href="#AudioPreprocessor-disconnectNotify">disconnectNotify</a>(self,&nbsp;signal:&nbsp;QMetaMethod)</span></dd></dl>
+
+<dl><dt><a name="AudioPreprocessor-dumpObjectInfo"><strong>dumpObjectInfo</strong></a>(...)</dt><dd><span class="code"><a href="#AudioPreprocessor-dumpObjectInfo">dumpObjectInfo</a>(self)</span></dd></dl>
+
+<dl><dt><a name="AudioPreprocessor-dumpObjectTree"><strong>dumpObjectTree</strong></a>(...)</dt><dd><span class="code"><a href="#AudioPreprocessor-dumpObjectTree">dumpObjectTree</a>(self)</span></dd></dl>
+
+<dl><dt><a name="AudioPreprocessor-dynamicPropertyNames"><strong>dynamicPropertyNames</strong></a>(...)</dt><dd><span class="code"><a href="#AudioPreprocessor-dynamicPropertyNames">dynamicPropertyNames</a>(self)&nbsp;-&gt;&nbsp;list[QByteArray]</span></dd></dl>
+
+<dl><dt><a name="AudioPreprocessor-event"><strong>event</strong></a>(...)</dt><dd><span class="code"><a href="#AudioPreprocessor-event">event</a>(self,&nbsp;a0:&nbsp;Optional[QEvent])&nbsp;-&gt;&nbsp;bool</span></dd></dl>
+
+<dl><dt><a name="AudioPreprocessor-eventFilter"><strong>eventFilter</strong></a>(...)</dt><dd><span class="code"><a href="#AudioPreprocessor-eventFilter">eventFilter</a>(self,&nbsp;a0:&nbsp;Optional[<a href="PyQt6.QtCore.html#QObject">QObject</a>],&nbsp;a1:&nbsp;Optional[QEvent])&nbsp;-&gt;&nbsp;bool</span></dd></dl>
+
+<dl><dt><a name="AudioPreprocessor-findChild"><strong>findChild</strong></a>(...)</dt><dd><span class="code"><a href="#AudioPreprocessor-findChild">findChild</a>(self,&nbsp;type:&nbsp;type[QObjectT],&nbsp;name:&nbsp;Optional[str]&nbsp;=&nbsp;'',&nbsp;options:&nbsp;Qt.FindChildOption&nbsp;=&nbsp;Qt.FindChildrenRecursively)&nbsp;-&gt;&nbsp;QObjectT<br>
+<a href="#AudioPreprocessor-findChild">findChild</a>(self,&nbsp;types:&nbsp;tuple[type[QObjectT],&nbsp;...],&nbsp;name:&nbsp;Optional[str]&nbsp;=&nbsp;'',&nbsp;options:&nbsp;Qt.FindChildOption&nbsp;=&nbsp;Qt.FindChildrenRecursively)&nbsp;-&gt;&nbsp;QObjectT</span></dd></dl>
+
+<dl><dt><a name="AudioPreprocessor-findChildren"><strong>findChildren</strong></a>(...)</dt><dd><span class="code"><a href="#AudioPreprocessor-findChildren">findChildren</a>(self,&nbsp;type:&nbsp;type[QObjectT],&nbsp;name:&nbsp;Optional[str]&nbsp;=&nbsp;'',&nbsp;options:&nbsp;Qt.FindChildOption&nbsp;=&nbsp;Qt.FindChildrenRecursively)&nbsp;-&gt;&nbsp;list[QObjectT]<br>
+<a href="#AudioPreprocessor-findChildren">findChildren</a>(self,&nbsp;types:&nbsp;tuple[type[QObjectT],&nbsp;...],&nbsp;name:&nbsp;Optional[str]&nbsp;=&nbsp;'',&nbsp;options:&nbsp;Qt.FindChildOption&nbsp;=&nbsp;Qt.FindChildrenRecursively)&nbsp;-&gt;&nbsp;list[QObjectT]<br>
+<a href="#AudioPreprocessor-findChildren">findChildren</a>(self,&nbsp;type:&nbsp;type[QObjectT],&nbsp;re:&nbsp;QRegularExpression,&nbsp;options:&nbsp;Qt.FindChildOption&nbsp;=&nbsp;Qt.FindChildrenRecursively)&nbsp;-&gt;&nbsp;list[QObjectT]<br>
+<a href="#AudioPreprocessor-findChildren">findChildren</a>(self,&nbsp;types:&nbsp;tuple[type[QObjectT],&nbsp;...],&nbsp;re:&nbsp;QRegularExpression,&nbsp;options:&nbsp;Qt.FindChildOption&nbsp;=&nbsp;Qt.FindChildrenRecursively)&nbsp;-&gt;&nbsp;list[QObjectT]</span></dd></dl>
+
+<dl><dt><a name="AudioPreprocessor-inherits"><strong>inherits</strong></a>(...)</dt><dd><span class="code"><a href="#AudioPreprocessor-inherits">inherits</a>(self,&nbsp;classname:&nbsp;Optional[str])&nbsp;-&gt;&nbsp;bool</span></dd></dl>
+
+<dl><dt><a name="AudioPreprocessor-installEventFilter"><strong>installEventFilter</strong></a>(...)</dt><dd><span class="code"><a href="#AudioPreprocessor-installEventFilter">installEventFilter</a>(self,&nbsp;a0:&nbsp;Optional[<a href="PyQt6.QtCore.html#QObject">QObject</a>])</span></dd></dl>
+
+<dl><dt><a name="AudioPreprocessor-isQuickItemType"><strong>isQuickItemType</strong></a>(...)</dt><dd><span class="code"><a href="#AudioPreprocessor-isQuickItemType">isQuickItemType</a>(self)&nbsp;-&gt;&nbsp;bool</span></dd></dl>
+
+<dl><dt><a name="AudioPreprocessor-isSignalConnected"><strong>isSignalConnected</strong></a>(...)</dt><dd><span class="code"><a href="#AudioPreprocessor-isSignalConnected">isSignalConnected</a>(self,&nbsp;signal:&nbsp;QMetaMethod)&nbsp;-&gt;&nbsp;bool</span></dd></dl>
+
+<dl><dt><a name="AudioPreprocessor-isWidgetType"><strong>isWidgetType</strong></a>(...)</dt><dd><span class="code"><a href="#AudioPreprocessor-isWidgetType">isWidgetType</a>(self)&nbsp;-&gt;&nbsp;bool</span></dd></dl>
+
+<dl><dt><a name="AudioPreprocessor-isWindowType"><strong>isWindowType</strong></a>(...)</dt><dd><span class="code"><a href="#AudioPreprocessor-isWindowType">isWindowType</a>(self)&nbsp;-&gt;&nbsp;bool</span></dd></dl>
+
+<dl><dt><a name="AudioPreprocessor-killTimer"><strong>killTimer</strong></a>(...)</dt><dd><span class="code"><a href="#AudioPreprocessor-killTimer">killTimer</a>(self,&nbsp;id:&nbsp;int)</span></dd></dl>
+
+<dl><dt><a name="AudioPreprocessor-metaObject"><strong>metaObject</strong></a>(...)</dt><dd><span class="code"><a href="#AudioPreprocessor-metaObject">metaObject</a>(self)&nbsp;-&gt;&nbsp;Optional[QMetaObject]</span></dd></dl>
+
+<dl><dt><a name="AudioPreprocessor-moveToThread"><strong>moveToThread</strong></a>(...)</dt><dd><span class="code"><a href="#AudioPreprocessor-moveToThread">moveToThread</a>(self,&nbsp;thread:&nbsp;Optional[QThread])</span></dd></dl>
+
+<dl><dt><a name="AudioPreprocessor-objectName"><strong>objectName</strong></a>(...)</dt><dd><span class="code"><a href="#AudioPreprocessor-objectName">objectName</a>(self)&nbsp;-&gt;&nbsp;str</span></dd></dl>
+
+<dl><dt><a name="AudioPreprocessor-parent"><strong>parent</strong></a>(...)</dt><dd><span class="code"><a href="#AudioPreprocessor-parent">parent</a>(self)&nbsp;-&gt;&nbsp;Optional[<a href="PyQt6.QtCore.html#QObject">QObject</a>]</span></dd></dl>
+
+<dl><dt><a name="AudioPreprocessor-property"><strong>property</strong></a>(...)</dt><dd><span class="code"><a href="#AudioPreprocessor-property">property</a>(self,&nbsp;name:&nbsp;Optional[str])&nbsp;-&gt;&nbsp;Any</span></dd></dl>
+
+<dl><dt><a name="AudioPreprocessor-pyqtConfigure"><strong>pyqtConfigure</strong></a>(...)</dt><dd><span class="code"><a href="PyQt6.QtCore.html#QObject">QObject</a>.<a href="#AudioPreprocessor-pyqtConfigure">pyqtConfigure</a>(...)<br>
+&nbsp;<br>
+Each&nbsp;keyword&nbsp;argument&nbsp;is&nbsp;either&nbsp;the&nbsp;name&nbsp;of&nbsp;a&nbsp;Qt&nbsp;property&nbsp;or&nbsp;a&nbsp;Qt&nbsp;signal.<br>
+For&nbsp;properties&nbsp;the&nbsp;property&nbsp;is&nbsp;set&nbsp;to&nbsp;the&nbsp;given&nbsp;value&nbsp;which&nbsp;should&nbsp;be&nbsp;of&nbsp;an<br>
+appropriate&nbsp;type.<br>
+For&nbsp;signals&nbsp;the&nbsp;signal&nbsp;is&nbsp;connected&nbsp;to&nbsp;the&nbsp;given&nbsp;value&nbsp;which&nbsp;should&nbsp;be&nbsp;a<br>
+callable.</span></dd></dl>
+
+<dl><dt><a name="AudioPreprocessor-receivers"><strong>receivers</strong></a>(...)</dt><dd><span class="code"><a href="#AudioPreprocessor-receivers">receivers</a>(self,&nbsp;signal:&nbsp;PYQT_SIGNAL)&nbsp;-&gt;&nbsp;int</span></dd></dl>
+
+<dl><dt><a name="AudioPreprocessor-removeEventFilter"><strong>removeEventFilter</strong></a>(...)</dt><dd><span class="code"><a href="#AudioPreprocessor-removeEventFilter">removeEventFilter</a>(self,&nbsp;a0:&nbsp;Optional[<a href="PyQt6.QtCore.html#QObject">QObject</a>])</span></dd></dl>
+
+<dl><dt><a name="AudioPreprocessor-sender"><strong>sender</strong></a>(...)</dt><dd><span class="code"><a href="#AudioPreprocessor-sender">sender</a>(self)&nbsp;-&gt;&nbsp;Optional[<a href="PyQt6.QtCore.html#QObject">QObject</a>]</span></dd></dl>
+
+<dl><dt><a name="AudioPreprocessor-senderSignalIndex"><strong>senderSignalIndex</strong></a>(...)</dt><dd><span class="code"><a href="#AudioPreprocessor-senderSignalIndex">senderSignalIndex</a>(self)&nbsp;-&gt;&nbsp;int</span></dd></dl>
+
+<dl><dt><a name="AudioPreprocessor-setObjectName"><strong>setObjectName</strong></a>(...)</dt><dd><span class="code"><a href="#AudioPreprocessor-setObjectName">setObjectName</a>(self,&nbsp;name:&nbsp;Union[Union[QByteArray,&nbsp;bytes,&nbsp;bytearray,&nbsp;memoryview],&nbsp;Optional[str]])</span></dd></dl>
+
+<dl><dt><a name="AudioPreprocessor-setParent"><strong>setParent</strong></a>(...)</dt><dd><span class="code"><a href="#AudioPreprocessor-setParent">setParent</a>(self,&nbsp;a0:&nbsp;Optional[<a href="PyQt6.QtCore.html#QObject">QObject</a>])</span></dd></dl>
+
+<dl><dt><a name="AudioPreprocessor-setProperty"><strong>setProperty</strong></a>(...)</dt><dd><span class="code"><a href="#AudioPreprocessor-setProperty">setProperty</a>(self,&nbsp;name:&nbsp;Optional[str],&nbsp;value:&nbsp;Any)&nbsp;-&gt;&nbsp;bool</span></dd></dl>
+
+<dl><dt><a name="AudioPreprocessor-signalsBlocked"><strong>signalsBlocked</strong></a>(...)</dt><dd><span class="code"><a href="#AudioPreprocessor-signalsBlocked">signalsBlocked</a>(self)&nbsp;-&gt;&nbsp;bool</span></dd></dl>
+
+<dl><dt><a name="AudioPreprocessor-startTimer"><strong>startTimer</strong></a>(...)</dt><dd><span class="code"><a href="#AudioPreprocessor-startTimer">startTimer</a>(self,&nbsp;interval:&nbsp;int,&nbsp;timerType:&nbsp;Qt.TimerType&nbsp;=&nbsp;Qt.CoarseTimer)&nbsp;-&gt;&nbsp;int</span></dd></dl>
+
+<dl><dt><a name="AudioPreprocessor-thread"><strong>thread</strong></a>(...)</dt><dd><span class="code"><a href="#AudioPreprocessor-thread">thread</a>(self)&nbsp;-&gt;&nbsp;Optional[QThread]</span></dd></dl>
+
+<dl><dt><a name="AudioPreprocessor-timerEvent"><strong>timerEvent</strong></a>(...)</dt><dd><span class="code"><a href="#AudioPreprocessor-timerEvent">timerEvent</a>(self,&nbsp;a0:&nbsp;Optional[QTimerEvent])</span></dd></dl>
+
+<dl><dt><a name="AudioPreprocessor-tr"><strong>tr</strong></a>(...)</dt><dd><span class="code"><a href="#AudioPreprocessor-tr">tr</a>(sourceText:&nbsp;Optional[str],&nbsp;disambiguation:&nbsp;Optional[str]&nbsp;=&nbsp;None,&nbsp;n:&nbsp;int&nbsp;=&nbsp;-1)&nbsp;-&gt;&nbsp;str</span></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="PyQt6.QtCore.html#QObject">PyQt6.QtCore.QObject</a>:<br>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><span class="code">list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object</span></dd>
+</dl>
+<hr>
+Data and other attributes inherited from <a href="PyQt6.QtCore.html#QObject">PyQt6.QtCore.QObject</a>:<br>
+<dl><dt><strong>staticMetaObject</strong> = &lt;PyQt6.QtCore.QMetaObject object&gt;</dl>
+
+<hr>
+Static methods inherited from <a href="PyQt6.sip.html#simplewrapper">PyQt6.sip.simplewrapper</a>:<br>
+<dl><dt><a name="AudioPreprocessor-__new__"><strong>__new__</strong></a>(*args, **kwargs)<span class="grey"><span class="heading-text"> class method of <a href="PyQt6.sip.html#simplewrapper">PyQt6.sip.simplewrapper</a></span></span></dt><dd><span class="code">Create&nbsp;and&nbsp;return&nbsp;a&nbsp;new&nbsp;object.&nbsp;&nbsp;See&nbsp;help(type)&nbsp;for&nbsp;accurate&nbsp;signature.</span></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="PyQt6.sip.html#simplewrapper">PyQt6.sip.simplewrapper</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+</dl>
+</td></tr></table></td></tr></table>
+</body></html>

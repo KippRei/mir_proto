@@ -1,9 +1,7 @@
 from PyQt6.QtWidgets import QSlider, QWidget, QGridLayout, QListWidget, QFileDialog, QPushButton, QLabel, QLCDNumber
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPixmap, QIcon
-from qt_square_button import SquareButton
-from qt_song_list_widget import SongListItem
-import os
+from zqt_custom_widgets import SquareButton, PreprocessButton,SongListItem
 
 class QtGui(QWidget):
     PLAY_BTN_PLAYING_IMG = './images/g_playing_edit.png'
@@ -15,6 +13,8 @@ class QtGui(QWidget):
         self.midi_manager = midi_manager
         self.audio_preprocessor = audio_preprocessor
         self.color_map = self.midi_manager.get_pad_color_map()
+        self.audio_preprocessor.new_audio_preprocessed.connect(lambda: self.show_loading_bar(False))
+        self.audio_preprocessor.new_audio_preprocessed.connect(lambda: self.update_song_list())
 
         # Button maps = {MIDI controller pad num: QPushButton}
         self.drum_buttons = {
@@ -52,9 +52,9 @@ class QtGui(QWidget):
         self.layout = QGridLayout()
 
         # Open/Drag and drop preprocess box
-        self.preprocess_btn = QPushButton('Select file for preprocessing')
-        self.preprocess_btn.setFixedSize(180, 180)
+        self.preprocess_btn = PreprocessButton('Select file for preprocessing', self.audio_preprocessor)
         self.preprocess_btn.clicked.connect(self.open_file_to_preprocess)
+        self.preprocess_btn.start_preprocessing.connect(lambda: self.show_loading_bar(True))
         self.layout.addWidget(self.preprocess_btn, 0, 0, alignment=Qt.AlignmentFlag.AlignVCenter)
 
         # List of songs/stems
@@ -207,8 +207,18 @@ class QtGui(QWidget):
         if file_dialog.exec():
             selected_files = file_dialog.selectedFiles()
             for f in selected_files:
+                self.show_loading_bar(True)
                 self.audio_preprocessor.process_audio(f)
-                self.update_song_list()
+
+    # Displays loading bar on preprocess button when song is being processed
+    def show_loading_bar(self, show_flag):
+        if show_flag:
+            self.preprocess_btn.setEnabled(False)
+            self.preprocess_btn.setText('Preprocessing song(s)...')
+        else:
+            self.preprocess_btn.setEnabled(True)
+            self.preprocess_btn.setText('Select file for preprocessing')
+
 
     # Sets position of volume slider
     def set_vol_slider(self, name):

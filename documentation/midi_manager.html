@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Python: module midi_manager</title>
+</head><body>
+
+<table class="heading">
+<tr class="heading-text decor">
+<td class="title">&nbsp;<br><strong class="title">midi_manager</strong></td>
+<td class="extra"><a href=".">index</a><br><a href="file:c%3A%5Cusers%5Cjappa%5Crepos%5Csr_proto%5Cmir_1%5Cmidi_manager.py">c:\users\jappa\repos\sr_proto\mir_1\midi_manager.py</a></td></tr></table>
+    <p><span class="code">midi_manager.py<br>
+&nbsp;<br>
+The&nbsp;<a href="#MIDIManager">MIDIManager</a>&nbsp;class&nbsp;opens&nbsp;ports&nbsp;USB&nbsp;MIDI&nbsp;controller,&nbsp;creates&nbsp;new&nbsp;thread&nbsp;to&nbsp;listen&nbsp;for&nbsp;MIDI&nbsp;messages,<br>
+manages&nbsp;USB&nbsp;MIDI&nbsp;controller&nbsp;pad&nbsp;color.</span></p>
+<p>
+<table class="section">
+<tr class="decor pkg-content-decor heading-text">
+<td class="section-title" colspan=3>&nbsp;<br><strong class="bigsection">Modules</strong></td></tr>
+    
+<tr><td class="decor pkg-content-decor"><span class="code">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td><td>&nbsp;</td>
+<td class="singlecolumn"><table><tr><td class="multicolumn"><a href="mido.html">mido</a><br>
+</td><td class="multicolumn"><a href="threading.html">threading</a><br>
+</td><td class="multicolumn"><a href="time.html">time</a><br>
+</td><td class="multicolumn"></td></tr></table></td></tr></table><p>
+<table class="section">
+<tr class="decor index-decor heading-text">
+<td class="section-title" colspan=3>&nbsp;<br><strong class="bigsection">Classes</strong></td></tr>
+    
+<tr><td class="decor index-decor"><span class="code">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td><td>&nbsp;</td>
+<td class="singlecolumn"><dl>
+<dt class="heading-text"><a href="builtins.html#object">builtins.object</a>
+</dt><dd>
+<dl>
+<dt class="heading-text"><a href="midi_manager.html#MIDIManager">MIDIManager</a>
+</dt></dl>
+</dd>
+</dl>
+ <p>
+<table class="section">
+<tr class="decor title-decor heading-text">
+<td class="section-title" colspan=3>&nbsp;<br><a name="MIDIManager">class <strong>MIDIManager</strong></a>(<a href="builtins.html#object">builtins.object</a>)</td></tr>
+    
+<tr><td class="decor title-decor" rowspan=2><span class="code">&nbsp;&nbsp;&nbsp;</span></td>
+<td class="decor title-decor" colspan=2><span class="code">Opens&nbsp;the&nbsp;input&nbsp;and&nbsp;output&nbsp;MIDI&nbsp;ports&nbsp;for&nbsp;the&nbsp;controller,&nbsp;listens&nbsp;for&nbsp;MIDI&nbsp;messages,<br>
+and&nbsp;manages&nbsp;color&nbsp;of&nbsp;USB&nbsp;MIDI&nbsp;controller&nbsp;pad&nbsp;colors.<br>&nbsp;</span></td></tr>
+<tr><td>&nbsp;</td>
+<td class="singlecolumn">Methods defined here:<br>
+<dl><dt><a name="MIDIManager-__init__"><strong>__init__</strong></a>(self)</dt><dd><span class="code">Initializes&nbsp;the&nbsp;MIDI&nbsp;Manager,&nbsp;attempts&nbsp;to&nbsp;open&nbsp;ports,&nbsp;sets&nbsp;the&nbsp;MIDI<br>
+mode,&nbsp;and&nbsp;starts&nbsp;the&nbsp;asynchronous&nbsp;listener&nbsp;thread&nbsp;if&nbsp;ports&nbsp;are&nbsp;found.</span></dd></dl>
+
+<dl><dt><a name="MIDIManager-get_messages"><strong>get_messages</strong></a>(self)</dt><dd><span class="code">Generator&nbsp;that&nbsp;retrieves&nbsp;the&nbsp;current&nbsp;MIDI&nbsp;messages&nbsp;from&nbsp;the<br>
+queue&nbsp;until&nbsp;it&nbsp;is&nbsp;empty.<br>
+&nbsp;<br>
+Yields<br>
+------<br>
+mido.Message<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;next&nbsp;available&nbsp;MIDI&nbsp;message&nbsp;<a href="builtins.html#object">object</a>.</span></dd></dl>
+
+<dl><dt><a name="MIDIManager-get_pad_color_map"><strong>get_pad_color_map</strong></a>(self)</dt><dd><span class="code">Returns&nbsp;the&nbsp;pad&nbsp;color&nbsp;map.<br>
+&nbsp;<br>
+Returns<br>
+-------<br>
+dict<br>
+&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;dictionary&nbsp;where&nbsp;keys&nbsp;are&nbsp;the&nbsp;MIDI&nbsp;note&nbsp;numbers&nbsp;(int)&nbsp;and&nbsp;values<br>
+&nbsp;&nbsp;&nbsp;&nbsp;are&nbsp;the&nbsp;current&nbsp;RGB&nbsp;color&nbsp;values&nbsp;(list)</span></dd></dl>
+
+<dl><dt><a name="MIDIManager-get_pad_on_off_color"><strong>get_pad_on_off_color</strong></a>(self, val)</dt><dd><span class="code">Returns&nbsp;requested&nbsp;RGB&nbsp;color&nbsp;values&nbsp;for&nbsp;button&nbsp;on&nbsp;or&nbsp;off&nbsp;state.<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+val&nbsp;:&nbsp;str<br>
+&nbsp;&nbsp;&nbsp;&nbsp;State&nbsp;requested&nbsp;(on&nbsp;color&nbsp;or&nbsp;off&nbsp;color).<br>
+&nbsp;<br>
+Returns<br>
+-------<br>
+list[int]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;RGB&nbsp;color&nbsp;values&nbsp;corresponding&nbsp;to&nbsp;the&nbsp;requested&nbsp;state.</span></dd></dl>
+
+<dl><dt><a name="MIDIManager-set_pad_colors"><strong>set_pad_colors</strong></a>(self)</dt><dd><span class="code">Sends&nbsp;MIDI&nbsp;messages&nbsp;to&nbsp;the&nbsp;USB&nbsp;MIDI&nbsp;controller&nbsp;to&nbsp;update&nbsp;the&nbsp;pad&nbsp;colors.</span></dd></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><span class="code">dictionary&nbsp;for&nbsp;instance&nbsp;variables</span></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><span class="code">list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object</span></dd>
+</dl>
+</td></tr></table></td></tr></table><p>
+<table class="section">
+<tr class="decor data-decor heading-text">
+<td class="section-title" colspan=3>&nbsp;<br><strong class="bigsection">Data</strong></td></tr>
+    
+<tr><td class="decor data-decor"><span class="code">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td><td>&nbsp;</td>
+<td class="singlecolumn"><strong>AQUA</strong> = [0, 127, 64]<br>
+<strong>BLUE</strong> = [0, 0, 127]<br>
+<strong>CYAN</strong> = [0, 127, 127]<br>
+<strong>GREEN</strong> = [0, 127, 0]<br>
+<strong>HOT_PINK</strong> = [127, 0, 64]<br>
+<strong>LIGHT_BLUE</strong> = [0, 64, 127]<br>
+<strong>LIME_GREEN</strong> = [64, 127, 0]<br>
+<strong>OLIVE</strong> = [64, 64, 0]<br>
+<strong>ORANGE</strong> = [127, 64, 0]<br>
+<strong>PAD_OFF_COLOR</strong> = [127, 0, 127]<br>
+<strong>PAD_ON_COLOR</strong> = [0, 127, 0]<br>
+<strong>PURPLE</strong> = [127, 0, 127]<br>
+<strong>RED</strong> = [127, 0, 0]<br>
+<strong>TEAL</strong> = [0, 64, 64]<br>
+<strong>YELLOW</strong> = [127, 127, 0]</td></tr></table>
+</body></html>

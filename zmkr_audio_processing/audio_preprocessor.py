@@ -4,7 +4,6 @@ import librosa
 from scipy import signal
 import threading
 
-# TODO: This must be in a separate thread, but playing while audio is preprocessing will likely cause stuttering due to CPU overload, ideas?
 class AudioPreprocessor(QObject):
     new_audio_preprocessed = pyqtSignal()
 
@@ -17,6 +16,8 @@ class AudioPreprocessor(QObject):
 
     # TODO: ensure valid audio file type
     def __process_audio(self, file_name: str):
+        if file_name.split('.')[-1] != 'mp3':
+            return
         orig_tempo, downbeats = bpm_detection.get_bpm(file_name)
         stems_to_process = split_into_stems.split(file_name)
 
@@ -26,20 +27,19 @@ class AudioPreprocessor(QObject):
 
         # TODO: Refactor this!
         # Trim silence from beginning of drum track to find good starting point (start_beat)
-        # TODO: Figure out a way to get first beat using drums maybe? Currently, it is not consistent
         y, sr = librosa.load(f'{tempo_processed_folder}/drums.mp3', sr=48000)
         _, start_beat = librosa.effects.trim(y=y, top_db=15)
-        print(f'Start beat: {start_beat}')
+        # print(f'Start beat: {start_beat}')
 
         closest_downbeat = 0
         min_dist_between = float('inf')
         for idx in range(len(downbeats)):
             # print(f'Stretch: {amt_to_stretch}')
             stretched_downbeat_sample_num = round((downbeats[idx] / amt_tempo_changed) * 48000)
-            print(f'Downbeat Time: {downbeats[idx]}, Stretched Downbeat Sample: {stretched_downbeat_sample_num}')
+            # print(f'Downbeat Time: {downbeats[idx]}, Stretched Downbeat Sample: {stretched_downbeat_sample_num}')
             curr_dist_between = start_beat[0] - stretched_downbeat_sample_num
             if abs(curr_dist_between) < min_dist_between:
-                print(f'Curr dist between: {curr_dist_between}')
+                # print(f'Curr dist between: {curr_dist_between}')
                 if curr_dist_between < -10000:
                     closest_downbeat = round((downbeats[idx + 1] / amt_tempo_changed) * 48000)
                 else:

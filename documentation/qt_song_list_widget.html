@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Python: module qt_song_list_widget</title>
+</head><body>
+
+<table class="heading">
+<tr class="heading-text decor">
+<td class="title">&nbsp;<br><strong class="title">qt_song_list_widget</strong></td>
+<td class="extra"><a href=".">index</a><br><a href="file:c%3A%5Cusers%5Cjappa%5Crepos%5Csr_proto%5Cmir_1%5Cqt_song_list_widget.py">c:\users\jappa\repos\sr_proto\mir_1\qt_song_list_widget.py</a></td></tr></table>
+    <p><span class="code">qt_song_list_widget.py<br>
+&nbsp;<br>
+The&nbsp;QtGui&nbsp;class&nbsp;which&nbsp;serves&nbsp;as&nbsp;the&nbsp;main&nbsp;window&nbsp;for&nbsp;the&nbsp;application.<br>
+It&nbsp;manages&nbsp;all&nbsp;GUI&nbsp;window&nbsp;elements&nbsp;like:&nbsp;volume&nbsp;sliders,&nbsp;button&nbsp;text/color,&nbsp;and&nbsp;song&nbsp;list.<br>
+Allows&nbsp;user&nbsp;to&nbsp;load&nbsp;channels/tracks&nbsp;by&nbsp;dragging&nbsp;song&nbsp;from&nbsp;song&nbsp;list&nbsp;to&nbsp;pad.</span></p>
+<p>
+<table class="section">
+<tr class="decor index-decor heading-text">
+<td class="section-title" colspan=3>&nbsp;<br><strong class="bigsection">Classes</strong></td></tr>
+    
+<tr><td class="decor index-decor"><span class="code">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td><td>&nbsp;</td>
+<td class="singlecolumn"><dl>
+<dt class="heading-text"><a href="PyQt6.QtWidgets.html#QListWidgetItem">PyQt6.QtWidgets.QListWidgetItem</a>(<a href="PyQt6.sip.html#wrapper">PyQt6.sip.wrapper</a>)
+</dt><dd>
+<dl>
+<dt class="heading-text"><a href="qt_song_list_widget.html#SongListItem">SongListItem</a>
+</dt></dl>
+</dd>
+</dl>
+ <p>
+<table class="section">
+<tr class="decor title-decor heading-text">
+<td class="section-title" colspan=3>&nbsp;<br><a name="SongListItem">class <strong>SongListItem</strong></a>(<a href="PyQt6.QtWidgets.html#QListWidgetItem">PyQt6.QtWidgets.QListWidgetItem</a>)</td></tr>
+    
+<tr><td class="decor title-decor" rowspan=2><span class="code">&nbsp;&nbsp;&nbsp;</span></td>
+<td class="decor title-decor" colspan=2><span class="code"><a href="#SongListItem">SongListItem</a>(text,&nbsp;parent)<br>
+&nbsp;<br>
+<br>&nbsp;</span></td></tr>
+<tr><td>&nbsp;</td>
+<td class="singlecolumn"><dl><dt>Method resolution order:</dt>
+<dd><a href="qt_song_list_widget.html#SongListItem">SongListItem</a></dd>
+<dd><a href="PyQt6.QtWidgets.html#QListWidgetItem">PyQt6.QtWidgets.QListWidgetItem</a></dd>
+<dd><a href="PyQt6.sip.html#wrapper">PyQt6.sip.wrapper</a></dd>
+<dd><a href="PyQt6.sip.html#simplewrapper">PyQt6.sip.simplewrapper</a></dd>
+<dd><a href="builtins.html#object">builtins.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="SongListItem-__init__"><strong>__init__</strong></a>(self, text, parent)</dt><dd><span class="code">Initialize&nbsp;self.&nbsp;&nbsp;See&nbsp;help(<a href="#SongListItem-type">type</a>(self))&nbsp;for&nbsp;accurate&nbsp;signature.</span></dd></dl>
+
+<hr>
+Methods inherited from <a href="PyQt6.QtWidgets.html#QListWidgetItem">PyQt6.QtWidgets.QListWidgetItem</a>:<br>
+<dl><dt><a name="SongListItem-__eq__"><strong>__eq__</strong></a>(self, value, /)</dt><dd><span class="code">Return&nbsp;self==value.</span></dd></dl>
+
+<dl><dt><a name="SongListItem-__ge__"><strong>__ge__</strong></a>(self, value, /)</dt><dd><span class="code">Return&nbsp;self&gt;=value.</span></dd></dl>
+
+<dl><dt><a name="SongListItem-__gt__"><strong>__gt__</strong></a>(self, value, /)</dt><dd><span class="code">Return&nbsp;self&gt;value.</span></dd></dl>
+
+<dl><dt><a name="SongListItem-__le__"><strong>__le__</strong></a>(self, value, /)</dt><dd><span class="code">Return&nbsp;self&lt;=value.</span></dd></dl>
+
+<dl><dt><a name="SongListItem-__lt__"><strong>__lt__</strong></a>(self, value, /)</dt><dd><span class="code">Return&nbsp;self&lt;value.</span></dd></dl>
+
+<dl><dt><a name="SongListItem-__ne__"><strong>__ne__</strong></a>(self, value, /)</dt><dd><span class="code">Return&nbsp;self!=value.</span></dd></dl>
+
+<hr>
+Static methods inherited from <a href="PyQt6.QtWidgets.html#QListWidgetItem">PyQt6.QtWidgets.QListWidgetItem</a>:<br>
+<dl><dt><a name="SongListItem-background"><strong>background</strong></a>(...)</dt><dd><span class="code"><a href="#SongListItem-background">background</a>(self)&nbsp;-&gt;&nbsp;QBrush</span></dd></dl>
+
+<dl><dt><a name="SongListItem-checkState"><strong>checkState</strong></a>(...)</dt><dd><span class="code"><a href="#SongListItem-checkState">checkState</a>(self)&nbsp;-&gt;&nbsp;Qt.CheckState</span></dd></dl>
+
+<dl><dt><a name="SongListItem-clone"><strong>clone</strong></a>(...)</dt><dd><span class="code"><a href="#SongListItem-clone">clone</a>(self)&nbsp;-&gt;&nbsp;Optional[<a href="PyQt6.QtWidgets.html#QListWidgetItem">QListWidgetItem</a>]</span></dd></dl>
+
+<dl><dt><a name="SongListItem-data"><strong>data</strong></a>(...)</dt><dd><span class="code"><a href="#SongListItem-data">data</a>(self,&nbsp;role:&nbsp;int)&nbsp;-&gt;&nbsp;Any</span></dd></dl>
+
+<dl><dt><a name="SongListItem-flags"><strong>flags</strong></a>(...)</dt><dd><span class="code"><a href="#SongListItem-flags">flags</a>(self)&nbsp;-&gt;&nbsp;Qt.ItemFlag</span></dd></dl>
+
+<dl><dt><a name="SongListItem-font"><strong>font</strong></a>(...)</dt><dd><span class="code"><a href="#SongListItem-font">font</a>(self)&nbsp;-&gt;&nbsp;QFont</span></dd></dl>
+
+<dl><dt><a name="SongListItem-foreground"><strong>foreground</strong></a>(...)</dt><dd><span class="code"><a href="#SongListItem-foreground">foreground</a>(self)&nbsp;-&gt;&nbsp;QBrush</span></dd></dl>
+
+<dl><dt><a name="SongListItem-icon"><strong>icon</strong></a>(...)</dt><dd><span class="code"><a href="#SongListItem-icon">icon</a>(self)&nbsp;-&gt;&nbsp;QIcon</span></dd></dl>
+
+<dl><dt><a name="SongListItem-isHidden"><strong>isHidden</strong></a>(...)</dt><dd><span class="code"><a href="#SongListItem-isHidden">isHidden</a>(self)&nbsp;-&gt;&nbsp;bool</span></dd></dl>
+
+<dl><dt><a name="SongListItem-isSelected"><strong>isSelected</strong></a>(...)</dt><dd><span class="code"><a href="#SongListItem-isSelected">isSelected</a>(self)&nbsp;-&gt;&nbsp;bool</span></dd></dl>
+
+<dl><dt><a name="SongListItem-listWidget"><strong>listWidget</strong></a>(...)</dt><dd><span class="code"><a href="#SongListItem-listWidget">listWidget</a>(self)&nbsp;-&gt;&nbsp;Optional[QListWidget]</span></dd></dl>
+
+<dl><dt><a name="SongListItem-read"><strong>read</strong></a>(...)</dt><dd><span class="code"><a href="#SongListItem-read">read</a>(self,&nbsp;in_:&nbsp;QDataStream)</span></dd></dl>
+
+<dl><dt><a name="SongListItem-setBackground"><strong>setBackground</strong></a>(...)</dt><dd><span class="code"><a href="#SongListItem-setBackground">setBackground</a>(self,&nbsp;brush:&nbsp;Union[QBrush,&nbsp;Union[QColor,&nbsp;Qt.GlobalColor,&nbsp;int],&nbsp;QGradient])</span></dd></dl>
+
+<dl><dt><a name="SongListItem-setCheckState"><strong>setCheckState</strong></a>(...)</dt><dd><span class="code"><a href="#SongListItem-setCheckState">setCheckState</a>(self,&nbsp;state:&nbsp;Qt.CheckState)</span></dd></dl>
+
+<dl><dt><a name="SongListItem-setData"><strong>setData</strong></a>(...)</dt><dd><span class="code"><a href="#SongListItem-setData">setData</a>(self,&nbsp;role:&nbsp;int,&nbsp;value:&nbsp;Any)</span></dd></dl>
+
+<dl><dt><a name="SongListItem-setFlags"><strong>setFlags</strong></a>(...)</dt><dd><span class="code"><a href="#SongListItem-setFlags">setFlags</a>(self,&nbsp;aflags:&nbsp;Qt.ItemFlag)</span></dd></dl>
+
+<dl><dt><a name="SongListItem-setFont"><strong>setFont</strong></a>(...)</dt><dd><span class="code"><a href="#SongListItem-setFont">setFont</a>(self,&nbsp;afont:&nbsp;QFont)</span></dd></dl>
+
+<dl><dt><a name="SongListItem-setForeground"><strong>setForeground</strong></a>(...)</dt><dd><span class="code"><a href="#SongListItem-setForeground">setForeground</a>(self,&nbsp;brush:&nbsp;Union[QBrush,&nbsp;Union[QColor,&nbsp;Qt.GlobalColor,&nbsp;int],&nbsp;QGradient])</span></dd></dl>
+
+<dl><dt><a name="SongListItem-setHidden"><strong>setHidden</strong></a>(...)</dt><dd><span class="code"><a href="#SongListItem-setHidden">setHidden</a>(self,&nbsp;ahide:&nbsp;bool)</span></dd></dl>
+
+<dl><dt><a name="SongListItem-setIcon"><strong>setIcon</strong></a>(...)</dt><dd><span class="code"><a href="#SongListItem-setIcon">setIcon</a>(self,&nbsp;aicon:&nbsp;QIcon)</span></dd></dl>
+
+<dl><dt><a name="SongListItem-setSelected"><strong>setSelected</strong></a>(...)</dt><dd><span class="code"><a href="#SongListItem-setSelected">setSelected</a>(self,&nbsp;aselect:&nbsp;bool)</span></dd></dl>
+
+<dl><dt><a name="SongListItem-setSizeHint"><strong>setSizeHint</strong></a>(...)</dt><dd><span class="code"><a href="#SongListItem-setSizeHint">setSizeHint</a>(self,&nbsp;size:&nbsp;QSize)</span></dd></dl>
+
+<dl><dt><a name="SongListItem-setStatusTip"><strong>setStatusTip</strong></a>(...)</dt><dd><span class="code"><a href="#SongListItem-setStatusTip">setStatusTip</a>(self,&nbsp;astatusTip:&nbsp;Optional[str])</span></dd></dl>
+
+<dl><dt><a name="SongListItem-setText"><strong>setText</strong></a>(...)</dt><dd><span class="code"><a href="#SongListItem-setText">setText</a>(self,&nbsp;atext:&nbsp;Optional[str])</span></dd></dl>
+
+<dl><dt><a name="SongListItem-setTextAlignment"><strong>setTextAlignment</strong></a>(...)</dt><dd><span class="code"><a href="#SongListItem-setTextAlignment">setTextAlignment</a>(self,&nbsp;alignment:&nbsp;Qt.AlignmentFlag)<br>
+<a href="#SongListItem-setTextAlignment">setTextAlignment</a>(self,&nbsp;alignment:&nbsp;int)</span></dd></dl>
+
+<dl><dt><a name="SongListItem-setToolTip"><strong>setToolTip</strong></a>(...)</dt><dd><span class="code"><a href="#SongListItem-setToolTip">setToolTip</a>(self,&nbsp;atoolTip:&nbsp;Optional[str])</span></dd></dl>
+
+<dl><dt><a name="SongListItem-setWhatsThis"><strong>setWhatsThis</strong></a>(...)</dt><dd><span class="code"><a href="#SongListItem-setWhatsThis">setWhatsThis</a>(self,&nbsp;awhatsThis:&nbsp;Optional[str])</span></dd></dl>
+
+<dl><dt><a name="SongListItem-sizeHint"><strong>sizeHint</strong></a>(...)</dt><dd><span class="code"><a href="#SongListItem-sizeHint">sizeHint</a>(self)&nbsp;-&gt;&nbsp;QSize</span></dd></dl>
+
+<dl><dt><a name="SongListItem-statusTip"><strong>statusTip</strong></a>(...)</dt><dd><span class="code"><a href="#SongListItem-statusTip">statusTip</a>(self)&nbsp;-&gt;&nbsp;str</span></dd></dl>
+
+<dl><dt><a name="SongListItem-text"><strong>text</strong></a>(...)</dt><dd><span class="code"><a href="#SongListItem-text">text</a>(self)&nbsp;-&gt;&nbsp;str</span></dd></dl>
+
+<dl><dt><a name="SongListItem-textAlignment"><strong>textAlignment</strong></a>(...)</dt><dd><span class="code"><a href="#SongListItem-textAlignment">textAlignment</a>(self)&nbsp;-&gt;&nbsp;int</span></dd></dl>
+
+<dl><dt><a name="SongListItem-toolTip"><strong>toolTip</strong></a>(...)</dt><dd><span class="code"><a href="#SongListItem-toolTip">toolTip</a>(self)&nbsp;-&gt;&nbsp;str</span></dd></dl>
+
+<dl><dt><a name="SongListItem-type"><strong>type</strong></a>(...)</dt><dd><span class="code"><a href="#SongListItem-type">type</a>(self)&nbsp;-&gt;&nbsp;int</span></dd></dl>
+
+<dl><dt><a name="SongListItem-whatsThis"><strong>whatsThis</strong></a>(...)</dt><dd><span class="code"><a href="#SongListItem-whatsThis">whatsThis</a>(self)&nbsp;-&gt;&nbsp;str</span></dd></dl>
+
+<dl><dt><a name="SongListItem-write"><strong>write</strong></a>(...)</dt><dd><span class="code"><a href="#SongListItem-write">write</a>(self,&nbsp;out:&nbsp;QDataStream)</span></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="PyQt6.QtWidgets.html#QListWidgetItem">PyQt6.QtWidgets.QListWidgetItem</a>:<br>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><span class="code">list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object</span></dd>
+</dl>
+<hr>
+Data and other attributes inherited from <a href="PyQt6.QtWidgets.html#QListWidgetItem">PyQt6.QtWidgets.QListWidgetItem</a>:<br>
+<dl><dt><strong>ItemType</strong> = &lt;enum 'ItemType'&gt;</dl>
+
+<dl><dt><strong>__hash__</strong> = None</dl>
+
+<hr>
+Static methods inherited from <a href="PyQt6.sip.html#simplewrapper">PyQt6.sip.simplewrapper</a>:<br>
+<dl><dt><a name="SongListItem-__new__"><strong>__new__</strong></a>(*args, **kwargs)<span class="grey"><span class="heading-text"> class method of <a href="PyQt6.sip.html#simplewrapper">PyQt6.sip.simplewrapper</a></span></span></dt><dd><span class="code">Create&nbsp;and&nbsp;return&nbsp;a&nbsp;new&nbsp;object.&nbsp;&nbsp;See&nbsp;help(type)&nbsp;for&nbsp;accurate&nbsp;signature.</span></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="PyQt6.sip.html#simplewrapper">PyQt6.sip.simplewrapper</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+</dl>
+</td></tr></table></td></tr></table>
+</body></html>

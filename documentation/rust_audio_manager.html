@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Python: module rust_audio_manager</title>
+</head><body>
+
+<table class="heading">
+<tr class="heading-text decor">
+<td class="title">&nbsp;<br><strong class="title">rust_audio_manager</strong></td>
+<td class="extra"><a href=".">index</a><br><a href="file:c%3A%5Cusers%5Cjappa%5Crepos%5Csr_proto%5Cmir_1%5Crust_audio_manager.py">c:\users\jappa\repos\sr_proto\mir_1\rust_audio_manager.py</a></td></tr></table>
+    <p><span class="code">rust_audio_manager.py<br>
+&nbsp;<br>
+The&nbsp;<a href="#AudioPlayer">AudioPlayer</a>&nbsp;class&nbsp;is&nbsp;a&nbsp;Python&nbsp;wrapper&nbsp;for&nbsp;the&nbsp;audio&nbsp;engine&nbsp;implemented&nbsp;in&nbsp;Rust<br>
+(audio_player.rx).&nbsp;It&nbsp;handles&nbsp;loading&nbsp;and&nbsp;playing&nbsp;preprocessed<br>
+audio&nbsp;data&nbsp;and&nbsp;volume&nbsp;adjustment.</span></p>
+<p>
+<table class="section">
+<tr class="decor pkg-content-decor heading-text">
+<td class="section-title" colspan=3>&nbsp;<br><strong class="bigsection">Modules</strong></td></tr>
+    
+<tr><td class="decor pkg-content-decor"><span class="code">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td><td>&nbsp;</td>
+<td class="singlecolumn"><table><tr><td class="multicolumn"><a href="numpy.html">numpy</a><br>
+</td><td class="multicolumn"><a href="os.html">os</a><br>
+</td><td class="multicolumn"><a href="zmkr_audio_engine.html">zmkr_audio_engine</a><br>
+</td><td class="multicolumn"></td></tr></table></td></tr></table><p>
+<table class="section">
+<tr class="decor index-decor heading-text">
+<td class="section-title" colspan=3>&nbsp;<br><strong class="bigsection">Classes</strong></td></tr>
+    
+<tr><td class="decor index-decor"><span class="code">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td><td>&nbsp;</td>
+<td class="singlecolumn"><dl>
+<dt class="heading-text"><a href="builtins.html#object">builtins.object</a>
+</dt><dd>
+<dl>
+<dt class="heading-text"><a href="rust_audio_manager.html#AudioPlayer">AudioPlayer</a>
+</dt></dl>
+</dd>
+</dl>
+ <p>
+<table class="section">
+<tr class="decor title-decor heading-text">
+<td class="section-title" colspan=3>&nbsp;<br><a name="AudioPlayer">class <strong>AudioPlayer</strong></a>(<a href="builtins.html#object">builtins.object</a>)</td></tr>
+    
+<tr><td class="decor title-decor" rowspan=2><span class="code">&nbsp;&nbsp;&nbsp;</span></td>
+<td class="decor title-decor" colspan=2><span class="code">Manages&nbsp;the&nbsp;audio&nbsp;state.&nbsp;Handles&nbsp;loading&nbsp;songs,&nbsp;playback,<br>
+and&nbsp;track&nbsp;volumes.<br>&nbsp;</span></td></tr>
+<tr><td>&nbsp;</td>
+<td class="singlecolumn">Methods defined here:<br>
+<dl><dt><a name="AudioPlayer-__init__"><strong>__init__</strong></a>(self)</dt><dd><span class="code">Initializes&nbsp;the&nbsp;Mixer&nbsp;class&nbsp;(audio_player.rs)&nbsp;and&nbsp;calls&nbsp;load_preprocessed_songs&nbsp;to<br>
+load&nbsp;all&nbsp;preprocessed&nbsp;songs&nbsp;from&nbsp;the&nbsp;'./preprocessed_audio'&nbsp;directory.</span></dd></dl>
+
+<dl><dt><a name="AudioPlayer-adj_track_vol"><strong>adj_track_vol</strong></a>(self, track, adjustment)</dt><dd><span class="code">Adjusts&nbsp;the&nbsp;volume&nbsp;of&nbsp;a&nbsp;specific&nbsp;track.<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+track&nbsp;:&nbsp;str<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;stem/track&nbsp;type&nbsp;('drum',&nbsp;'bass',&nbsp;'melody',&nbsp;or&nbsp;'vocal').<br>
+adjustment&nbsp;:&nbsp;float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;amount&nbsp;to&nbsp;change&nbsp;the&nbsp;volume.</span></dd></dl>
+
+<dl><dt><a name="AudioPlayer-get_channel_list_on_off"><strong>get_channel_list_on_off</strong></a>(self)</dt><dd><span class="code">Retrieves&nbsp;the&nbsp;current&nbsp;on/off&nbsp;state&nbsp;of&nbsp;all&nbsp;16&nbsp;channels.<br>
+&nbsp;<br>
+Returns<br>
+-------<br>
+list[bool]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;on/off&nbsp;states&nbsp;of&nbsp;each&nbsp;channel&nbsp;(list).</span></dd></dl>
+
+<dl><dt><a name="AudioPlayer-get_song_list"><strong>get_song_list</strong></a>(self)</dt><dd><span class="code">Gets&nbsp;the&nbsp;list&nbsp;of&nbsp;available&nbsp;song&nbsp;titles&nbsp;that&nbsp;have&nbsp;been&nbsp;preprocessed<br>
+and&nbsp;loaded&nbsp;into&nbsp;the&nbsp;mixer.<br>
+&nbsp;<br>
+Returns<br>
+-------<br>
+list[str]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;list&nbsp;of&nbsp;song&nbsp;titles.</span></dd></dl>
+
+<dl><dt><a name="AudioPlayer-get_track_vol"><strong>get_track_vol</strong></a>(self, name)</dt><dd><span class="code">Gets&nbsp;the&nbsp;current&nbsp;volume&nbsp;level&nbsp;of&nbsp;the&nbsp;specified&nbsp;track&nbsp;type.<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+name&nbsp;:&nbsp;str<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;name&nbsp;of&nbsp;the&nbsp;track&nbsp;type&nbsp;('drum',&nbsp;'bass',&nbsp;'melody',&nbsp;or&nbsp;'vocal').<br>
+&nbsp;<br>
+Returns<br>
+-------<br>
+float<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;current&nbsp;volume&nbsp;(0.0&nbsp;to&nbsp;1.0)</span></dd></dl>
+
+<dl><dt><a name="AudioPlayer-hit_play"><strong>hit_play</strong></a>(self)</dt><dd><span class="code">Calls&nbsp;mixer&nbsp;play&nbsp;function&nbsp;to&nbsp;start&nbsp;playing&nbsp;audio.</span></dd></dl>
+
+<dl><dt><a name="AudioPlayer-hit_stop"><strong>hit_stop</strong></a>(self)</dt><dd><span class="code">Calls&nbsp;mixer&nbsp;stop&nbsp;function&nbsp;to&nbsp;stop&nbsp;playing&nbsp;audio.</span></dd></dl>
+
+<dl><dt><a name="AudioPlayer-load_preprocessed_songs"><strong>load_preprocessed_songs</strong></a>(self)</dt><dd><span class="code">Loads&nbsp;all&nbsp;preprocessed&nbsp;songs.</span></dd></dl>
+
+<dl><dt><a name="AudioPlayer-load_track"><strong>load_track</strong></a>(self, title, channel) -&gt; bool</dt><dd><span class="code">Loads&nbsp;the&nbsp;specified&nbsp;track&nbsp;into&nbsp;a&nbsp;channel.<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+title&nbsp;:&nbsp;str<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;title&nbsp;of&nbsp;the&nbsp;song&nbsp;that&nbsp;is&nbsp;loaded&nbsp;into&nbsp;the&nbsp;channel.<br>
+channel&nbsp;:&nbsp;int<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;channel&nbsp;number&nbsp;in&nbsp;which&nbsp;to&nbsp;load&nbsp;the&nbsp;stem.<br>
+&nbsp;<br>
+Returns<br>
+-------<br>
+bool<br>
+&nbsp;&nbsp;&nbsp;&nbsp;True&nbsp;if&nbsp;the&nbsp;track&nbsp;was&nbsp;successfully&nbsp;loaded&nbsp;and&nbsp;False&nbsp;is&nbsp;not&nbsp;loaded&nbsp;(the&nbsp;track&nbsp;should&nbsp;never&nbsp;fail&nbsp;to&nbsp;load).</span></dd></dl>
+
+<dl><dt><a name="AudioPlayer-play_channel"><strong>play_channel</strong></a>(self, channel)</dt><dd><span class="code">Toggles&nbsp;the&nbsp;playback&nbsp;status&nbsp;(on/off)&nbsp;of&nbsp;a&nbsp;specific&nbsp;channel&nbsp;pad&nbsp;and<br>
+turns&nbsp;off&nbsp;other&nbsp;channels&nbsp;in&nbsp;the&nbsp;same&nbsp;column&nbsp;(stem&nbsp;type)<br>
+based&nbsp;on&nbsp;the&nbsp;Mixer's&nbsp;logic.<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+channel&nbsp;:&nbsp;int<br>
+&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;channel&nbsp;number&nbsp;(0-15).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Pad&nbsp;channels&nbsp;=&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;12&nbsp;13&nbsp;14&nbsp;15<br>
+&nbsp;&nbsp;&nbsp;&nbsp;08&nbsp;09&nbsp;10&nbsp;11<br>
+&nbsp;&nbsp;&nbsp;&nbsp;04&nbsp;05&nbsp;06&nbsp;07<br>
+&nbsp;&nbsp;&nbsp;&nbsp;00&nbsp;01&nbsp;02&nbsp;03</span></dd></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><span class="code">dictionary&nbsp;for&nbsp;instance&nbsp;variables</span></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><span class="code">list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object</span></dd>
+</dl>
+</td></tr></table></td></tr></table>
+</body></html>
