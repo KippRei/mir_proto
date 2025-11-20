@@ -1,13 +1,17 @@
-from PyQt6.QtWidgets import QPushButton, QListWidgetItem
+from PyQt6.QtWidgets import QToolButton, QListWidgetItem
 from PyQt6.QtCore import QSize, pyqtSignal
+from PyQt6.QtGui import QFont, QFontDatabase
 
-class PreprocessButton(QPushButton):
+class PreprocessButton(QToolButton):
     start_preprocessing = pyqtSignal()
 
     def __init__(self, text, audio_preprocessor):
         super().__init__(text=text)
         self.audio_preprocessor = audio_preprocessor
         self.setAcceptDrops(True)
+        font = QFontDatabase.addApplicationFont('./fonts/ZTNature-Medium.ttf')
+        font_family = QFontDatabase.applicationFontFamilies(font)
+        self.setFont(QFont(font_family[0], 10))
     
     def resizeEvent(self, event):
         size = event.size()
@@ -36,12 +40,15 @@ class PreprocessButton(QPushButton):
             self.audio_preprocessor.process_audio(url.path()[1:])
         event.accept()
 
-class SquareButton(QPushButton):
+class SquareButton(QToolButton):
     def __init__(self, text, track_number, audio_manager):
         super().__init__(text=text)
         self.audio_manager = audio_manager
         self.track_number = track_number
         self.setAcceptDrops(True)
+        font = QFontDatabase.addApplicationFont('./fonts/ZTNature-Medium.ttf')
+        font_family = QFontDatabase.applicationFontFamilies(font)
+        self.setFont(QFont(font_family[0], 10))
     
     def resizeEvent(self, event):
         size = event.size()
@@ -65,7 +72,11 @@ class SquareButton(QPushButton):
         # Change text of button to song name if loaded successfully
         if event.source() != None:
             if self.audio_manager.load_track(event.source().selectedItems()[0].text(), self.track_number):
-                self.setText(event.source().selectedItems()[0].text())
+                text = event.source().selectedItems()[0].text().split('-')
+                if len(text) > 1:
+                    self.setText(text[0][0:15] + '\n' + text[1][0:15])
+                else:
+                    self.setText(text[0][0:15])
             event.accept()
 
 class SongListItem(QListWidgetItem):

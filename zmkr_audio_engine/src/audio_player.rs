@@ -4,7 +4,7 @@ use numpy::ndarray::{Array2, Array3, ArrayBase, Ix2};
 use numpy::PyReadonlyArray;
 use pyo3::prelude::*;
 use std::collections::HashMap;
-use std::ops::{AddAssign, Deref};
+use std::ops::{Add, AddAssign, Deref};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use std::{f32, thread};
@@ -307,7 +307,7 @@ impl Mixer {
         channel_map_lock: &Vec<_Channel>,
         volumes: &HashMap<String, f64>,
     ) where
-        T: Sample + FromSample<f32> + AddAssign,
+        T: Sample + FromSample<f32> + AddAssign + std::ops::Add, f64: FromSample<T>
     {
         let BARS_32: usize = (32f32 * 4f32 * (60f32 / 124f32) * 48000f32).round() as usize;
         // let playback_state_data = &playback_state.data;
@@ -336,11 +336,14 @@ impl Mixer {
                 }
             }
 
-            left_mix = left_mix.clamp(-1.0, 1.0);
-            right_mix = right_mix.clamp(-1.0, 1.0);
+            // left_mix = left_mix.clamp(-1.0, 1.0);
+            // right_mix = right_mix.clamp(-1.0, 1.0);
 
-            out_frame[0] += T::from_sample(left_mix as f32);
-            out_frame[1] += T::from_sample(right_mix as f32);
+            let left_output = (T::to_sample::<f64>(out_frame[0]) + (left_mix as f64)).clamp(-1.0, 1.0);
+            let right_output = (T::to_sample::<f64>(out_frame[1]) + (right_mix as f64)).clamp(-1.0, 1.0);
+
+            out_frame[0] = T::from_sample(left_output as f32);
+            out_frame[1] = T::from_sample(right_output as f32);
             curr_frame += 1;
 
             if curr_frame == BARS_32 {

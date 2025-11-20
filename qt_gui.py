@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import QSlider, QWidget, QGridLayout, QListWidget, QFileDialog, QPushButton, QLabel, QLCDNumber
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QPixmap, QIcon
+from PyQt6.QtGui import QPixmap, QIcon, QFont, QFontDatabase
 from zqt_custom_widgets import SquareButton, PreprocessButton,SongListItem
 
 class QtGui(QWidget):
@@ -15,6 +15,9 @@ class QtGui(QWidget):
         self.color_map = self.midi_manager.get_pad_color_map()
         self.audio_preprocessor.new_audio_preprocessed.connect(lambda: self.show_loading_bar(False))
         self.audio_preprocessor.new_audio_preprocessed.connect(lambda: self.update_song_list())
+        font = QFontDatabase.addApplicationFont('./fonts/ZTNature-Medium.ttf')
+        font_family = QFontDatabase.applicationFontFamilies(font)
+        self.setFont(QFont(font_family[0], 10))
 
         # Button maps = {MIDI controller pad num: QPushButton}
         self.drum_buttons = {
@@ -108,7 +111,7 @@ class QtGui(QWidget):
 
         self.tempo_img = QLCDNumber(self)
         self.tempo_img.setDigitCount(3)
-        self.tempo_img.display(126)
+        self.tempo_img.display(124)
         self.tempo_img.setFixedHeight(120)
         self.tempo_img.setFixedWidth(180)
         self.layout.addWidget(self.tempo_img, 3, 0)

@@ -1,3 +1,9 @@
+"""
+change_tempo.py
+
+Analyzes and changes tempo of all stems in a folder.
+"""
+
 import soundfile as sf
 import pyrubberband as pyrb
 import os
