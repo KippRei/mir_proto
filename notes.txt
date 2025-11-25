@@ -1,0 +1,5 @@
+BUGS:
+BPM detection sometimes returns double time
+(Maybe try weighting more common tempos (i.e. 120 is weighted higher than 240 or 60))
+
+When song list is refreshed after preprocessing new songs it is blocking for a short amount of time

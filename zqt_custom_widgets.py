@@ -1,6 +1,6 @@
-from PyQt6.QtWidgets import QToolButton, QListWidgetItem
-from PyQt6.QtCore import QSize, pyqtSignal
-from PyQt6.QtGui import QFont, QFontDatabase
+from PyQt6.QtWidgets import QToolButton, QListWidgetItem, QListWidget
+from PyQt6.QtCore import QSize, pyqtSignal, Qt, QMimeData
+from PyQt6.QtGui import QFont, QFontDatabase, QDrag
 
 class PreprocessButton(QToolButton):
     start_preprocessing = pyqtSignal()
@@ -83,5 +83,13 @@ class SongListItem(QListWidgetItem):
     def __init__(self, text, parent):
         super().__init__(text, parent=parent)
 
+class SongList(QListWidget):
+    def __init__(self, parent):
+        super().__init__(parent=parent)
 
-    
+    def mouseMoveEvent(self, event):
+        if event.buttons() == Qt.MouseButton.LeftButton:
+            drag = QDrag(self)
+            mime = QMimeData()
+            drag.setMimeData(mime)
+            drag.exec(Qt.DropAction.CopyAction)

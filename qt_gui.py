@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QSlider, QWidget, QGridLayout, QListWidget, QFileDialog, QPushButton, QLabel, QLCDNumber
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPixmap, QIcon, QFont, QFontDatabase
-from zqt_custom_widgets import SquareButton, PreprocessButton,SongListItem
+from zqt_custom_widgets import SquareButton, PreprocessButton,SongListItem, SongList
 
 class QtGui(QWidget):
     PLAY_BTN_PLAYING_IMG = './images/g_playing_edit.png'
@@ -188,12 +188,12 @@ class QtGui(QWidget):
             
 
         else:
-            self.play_btn_img.setPixmap(QPixmap(self.PLAY_BTN_STOPPED_IMG))
+            self.play_btn_img.setPixmap(QPixmap(self.PLAY_BTN_STOPPED_IMG)) 
         
 
     # Updates list of songs
     def update_song_list(self):
-        self.song_list = QListWidget()
+        self.song_list = SongList(self)
         self.song_list.setDragEnabled(True)
         self.song_arr = []
         # Add name of each stem to song list
