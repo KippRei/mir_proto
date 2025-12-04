@@ -6,3 +6,4 @@ NOTES:<br />
 -This is not a release version, it is merely intended to show my progress.<br />
 -In the prototype phase, the software chooses a song/phrase start point by determining when drums enter the mix. The next phase (Dec./Jan.), I will begin working on a ML model for structure analysis to make better decisions for song/phrase
  starting point.<br />
+<img width="1204" height="1106" alt="Screenshot 2025-12-03 163217" src="https://github.com/user-attachments/assets/a4717cce-0b1d-43e9-a42a-7db7a9d22c7b" />
