@@ -1,9 +1,12 @@
 <div>
+<ins>Overview</ins>
+<br />
 A program that allows a user to easily mix/mashup songs using a MIDI controller (the PreSonus Atom). The user selected songs will be preprocessed and, once preprocessing is completed, the user will be able to select stems of the different 
 tracks (vocals, melody, bass, drums) and mix them together in real time. The overall mix will loop to allow for continuous mixing/playing of the music. The software handles: splitting the mp3 file into stems, BPM detection and beat 
 matching, and simple structure analysis to attempt to find a good start point for the stems.<br />
 <br />
-NOTES:<br />
+<ins>Notes</ins>
+<br />
 -This is not a release version, it is merely intended to show my progress.<br />
 -There is absolutely no manual processing of music in this program. All the audio separation, tempo adjustment, trimming, etc. is fully automated using custom algorithms and tools like 
                 <a style="text-decoration: none;" target="_blank" href="https://github.com/facebookresearch/demucs">demucs</a>, 
@@ -11,8 +14,7 @@ NOTES:<br />
                 <a style="text-decoration: none;" target="_blank" href="https://librosa.org/doc/latest/index.html">librosa</a>, and 
                 <a style="text-decoration: none;" target="_blank" href="https://github.com/CPJKU/beat_this">Beat This!</a>.
             <br />
--In the prototype phase, the software chooses a song/phrase start point by determining when drums enter the mix. The next phase (Dec./Jan.), I will begin working on a ML model for structure analysis to make better decisions for song/phrase
- starting point.<br />
+-In this prototype phase, the software chooses a song/phrase start point by determining when drums enter the mix and the tempo is fixed at 124 BPM. In the next phase (Dec./Jan.), I will begin working on a ML model for structure analysis to make better decisions for song/phrase starting point, as well as implementing a phase vocoder for real-time tempo adjustment.<br />
 </div>
 <br />
 <ins>How To Use</ins>
