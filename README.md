@@ -5,10 +5,17 @@ matching, and simple structure analysis to attempt to find a good start point fo
 <br />
 NOTES:<br />
 -This is not a release version, it is merely intended to show my progress.<br />
+-There is absolutely no manual processing of music in this program. All the audio separation, tempo adjustment, trimming, etc. is fully automated using custom algorithms and tools like 
+                <a style="text-decoration: none;" target="_blank" href="https://github.com/facebookresearch/demucs">demucs</a>, 
+                <a style="text-decoration: none;" target="_blank" href="https://pyrubberband.readthedocs.io/en/stable/">PyRubberband</a>, 
+                <a style="text-decoration: none;" target="_blank" href="https://librosa.org/doc/latest/index.html">librosa</a>, and 
+                <a style="text-decoration: none;" target="_blank" href="https://github.com/CPJKU/beat_this">Beat This!</a>.
+            <br />
 -In the prototype phase, the software chooses a song/phrase start point by determining when drums enter the mix. The next phase (Dec./Jan.), I will begin working on a ML model for structure analysis to make better decisions for song/phrase
  starting point.<br />
 </div>
 <br />
+<ins>How To Use</ins>
 <br />
 Step 1: Select songs for preprocessing by clicking button to open file explorer or dragging and dropping onto button.
 <br />
@@ -45,4 +52,9 @@ Step 4: Press the corresponding pad on the USB MIDI controller to turn on stem [
   <br />
  <br />
 <img width="50%" alt="Step 4 Image 2" src="https://github.com/user-attachments/assets/befd34aa-e301-43cb-8c6b-d6abedc14878" />
+</div>
+<br />
+<br />
+<div align="center">
+<video width="50%" alt="Video Demo" src="https://github.com/user-attachments/assets/1c042ef1-6cfe-4338-8317-c15226b783a9" />
 </div>
