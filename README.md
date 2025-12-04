@@ -57,6 +57,9 @@ Step 4: Press the corresponding pad on the USB MIDI controller to turn on stem [
 </div>
 <br />
 <br />
+<ins>Demo Video</ins>
+<br />
+<br />
 <div align="center">
 <video width="50%" alt="Video Demo" src="https://github.com/user-attachments/assets/1c042ef1-6cfe-4338-8317-c15226b783a9" />
 </div>
