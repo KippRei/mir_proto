@@ -27,8 +27,17 @@ class PreprocessButton(QToolButton):
         return QSize(180, 180)
     
     def dragEnterEvent(self, event):
+        valid_file_type = True
         if event.mimeData().hasUrls():
-            event.acceptProposedAction()
+            for url in event.mimeData().urls():
+                if url.path().split('.')[-1] != 'mp3':
+                    valid_file_type = False
+            
+            if valid_file_type:
+                event.acceptProposedAction()
+            else:
+                event.ignore()
+
         else:
             event.ignore()
     

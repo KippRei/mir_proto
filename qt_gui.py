@@ -185,8 +185,6 @@ class QtGui(QWidget):
     def set_play_btn(self, on_off):
         if on_off:
             self.play_btn_img.setPixmap(QPixmap(self.PLAY_BTN_PLAYING_IMG))
-            
-
         else:
             self.play_btn_img.setPixmap(QPixmap(self.PLAY_BTN_STOPPED_IMG)) 
         

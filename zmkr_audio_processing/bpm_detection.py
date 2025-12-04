@@ -1,8 +1,3 @@
-"""
-bpm_detection.py
-
-Detects and returns BPM for audio preprocessor.
-"""
 from beat_this.inference import File2Beats
 
 def get_bpm(audio_path) -> int:

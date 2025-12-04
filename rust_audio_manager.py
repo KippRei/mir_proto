@@ -34,7 +34,7 @@ class AudioPlayer():
 
     # Turn on/off channel and turn off all other channels in its column
     def play_channel(self, channel):
-        self.mixer.channel_on_off(channel)
+        return self.mixer.channel_on_off(channel)
 
     # Get track volumes (GUI)
     def get_track_vol(self, name):

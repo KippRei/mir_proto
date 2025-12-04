@@ -14,7 +14,7 @@ class AudioPreprocessor(QObject):
         audio_process_thread = threading.Thread(target=self.__process_audio, args=(file_name,), daemon=True)
         audio_process_thread.start()
 
-    # TODO: ensure valid audio file type
+    # TODO: ensure valid audio file type (aside from mp3)
     def __process_audio(self, file_name: str):
         if file_name.split('.')[-1] != 'mp3':
             return
