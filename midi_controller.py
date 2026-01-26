@@ -21,51 +21,80 @@ class MIDIController(QObject):
     # Processes received MIDI messages
     def process_midi_messages(self):
         for msg in self.midi_manager.get_messages():
-            if self.process_msg(msg):
-                self.change_pad_color()
+            self.process_msg(msg)
 
     def process_msg(self, msg):
-        # print(msg)
+        print(msg)
         match msg.type:
             case 'note_on':
                 match msg.note:
                     case 36:
-                        return self.audio_manager.play_channel(0)
+                        self.audio_manager.play_channel(0)
+                        self.change_pad_color()
+                        return True
                     case 37:
-                        return self.audio_manager.play_channel(1)
+                        self.audio_manager.play_channel(1)
+                        self.change_pad_color()
+                        return True
                     case 38:
-                        return self.audio_manager.play_channel(2)
+                        self.audio_manager.play_channel(2)
+                        self.change_pad_color()
+                        return True
                     case 39:
-                        return self.audio_manager.play_channel(3)
+                        self.audio_manager.play_channel(3)
+                        self.change_pad_color()
+                        return True
                     case 40:
-                        return self.audio_manager.play_channel(4)
+                        self.audio_manager.play_channel(4)
+                        self.change_pad_color()
+                        return True
                     case 41:
-                        return self.audio_manager.play_channel(5)
+                        self.audio_manager.play_channel(5)
+                        self.change_pad_color()
+                        return True
                     case 42:
-                        return self.audio_manager.play_channel(6)
+                        self.audio_manager.play_channel(6)
+                        self.change_pad_color()
+                        return True
                     case 43:
-                        return self.audio_manager.play_channel(7)
+                        self.audio_manager.play_channel(7)
+                        self.change_pad_color()
+                        return True
                     case 44:
-                        return self.audio_manager.play_channel(8)
+                        self.audio_manager.play_channel(8)
+                        self.change_pad_color()
+                        return True
                     case 45:
-                        return self.audio_manager.play_channel(9)
+                        self.audio_manager.play_channel(9)
+                        self.change_pad_color()
+                        return True
                     case 46:
-                        return self.audio_manager.play_channel(10)
+                        self.audio_manager.play_channel(10)
+                        self.change_pad_color()
+                        return True
                     case 47:
-                        return self.audio_manager.play_channel(11)
+                        self.audio_manager.play_channel(11)
+                        self.change_pad_color()
+                        return True
                     case 48:
-                        return self.audio_manager.play_channel(12)
+                        self.audio_manager.play_channel(12)
+                        self.change_pad_color()
+                        return True
                     case 49:
-                        return self.audio_manager.play_channel(13)
+                        self.audio_manager.play_channel(13)
+                        self.change_pad_color()
+                        return True
                     case 50:
-                        return self.audio_manager.play_channel(14)
+                        self.audio_manager.play_channel(14)
+                        self.change_pad_color()
+                        return True
                     case 51:
-                        return self.audio_manager.play_channel(15)
+                        self.audio_manager.play_channel(15)
+                        self.change_pad_color()
+                        return True
                     case _:
                         return False
                         
-                self.change_pad_color()
-
             case 'control_change':
                 match msg.control:
                     case 14:
@@ -113,12 +142,12 @@ class MIDIController(QObject):
 
     # Logic for changing pad color map values to 'ON' for button pressed and changes color of all other buttons in column to 'OFF'
     def change_pad_color(self):
-        if not self.midi_manager.ports_open:
-            return
         for idx, is_playing in enumerate(self.audio_manager.get_channel_list_on_off()):
             self.pad_color_map[idx+36] = self.midi_manager.get_pad_on_off_color('on') if is_playing else self.midi_manager.get_pad_on_off_color('off')
     
-        # Tell midi manager to update colors
-        self.midi_manager.set_pad_colors()
+        if self.midi_manager.ports_open:
+            # Tell midi manager to update colors
+            self.midi_manager.set_pad_colors()
+            
         # Emit signal to tell GUI to update
         self.change_pad_color_signal.emit()

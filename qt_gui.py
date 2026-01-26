@@ -2,16 +2,19 @@ from PyQt6.QtWidgets import QSlider, QWidget, QGridLayout, QListWidget, QFileDia
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPixmap, QIcon, QFont, QFontDatabase
 from zqt_custom_widgets import SquareButton, PreprocessButton,SongListItem, SongList
+import mido
+from functools import partial
 
 class QtGui(QWidget):
     PLAY_BTN_PLAYING_IMG = './images/g_playing_edit.png'
     PLAY_BTN_STOPPED_IMG = './images/g_stopped_edit.png'
 
-    def __init__(self, audio_manager, midi_manager, audio_preprocessor):
+    def __init__(self, audio_manager, midi_manager, audio_preprocessor, midi_controller):
         super().__init__()
         self.audio_manager = audio_manager
         self.midi_manager = midi_manager
         self.audio_preprocessor = audio_preprocessor
+        self.midi_controller = midi_controller
         self.color_map = self.midi_manager.get_pad_color_map()
         self.audio_preprocessor.new_audio_preprocessed.connect(lambda: self.show_loading_bar(False))
         self.audio_preprocessor.new_audio_preprocessed.connect(lambda: self.update_song_list())
@@ -85,18 +88,26 @@ class QtGui(QWidget):
 
         for idx, key in enumerate(self.drum_buttons.keys()):
             self.drum_buttons[key] = SquareButton('Drums', key - 36, self.audio_manager)
+            if not self.midi_manager.ports_open:
+                self.drum_buttons[key].clicked.connect(partial(self.midi_controller.process_msg, mido.Message('note_on', note=key)))
             self.layout.addWidget(self.drum_buttons[key], idx + 1, 1, alignment=Qt.AlignmentFlag.AlignHCenter)
 
         for idx, key in enumerate(self.bass_buttons.keys()):
             self.bass_buttons[key] = SquareButton('Bass', key - 36, self.audio_manager)
+            if not self.midi_manager.ports_open:
+                self.bass_buttons[key].clicked.connect(partial(self.midi_controller.process_msg, mido.Message('note_on', note=key)))
             self.layout.addWidget(self.bass_buttons[key], idx + 1, 2, alignment=Qt.AlignmentFlag.AlignHCenter)
 
         for idx, key in enumerate(self.melody_buttons.keys()):
             self.melody_buttons[key] = SquareButton('Melody', key - 36, self.audio_manager)
+            if not self.midi_manager.ports_open:
+                self.melody_buttons[key].clicked.connect(partial(self.midi_controller.process_msg, mido.Message('note_on', note=key)))
             self.layout.addWidget(self.melody_buttons[key], idx + 1, 3, alignment=Qt.AlignmentFlag.AlignHCenter)
 
         for idx, key in enumerate(self.vocal_buttons.keys()):
             self.vocal_buttons[key] = SquareButton('Vocal', key - 36, self.audio_manager)
+            if not self.midi_manager.ports_open:
+                self.vocal_buttons[key].clicked.connect(partial(self.midi_controller.process_msg, mido.Message('note_on', note=key)))
             self.layout.addWidget(self.vocal_buttons[key], idx + 1, 4, alignment=Qt.AlignmentFlag.AlignHCenter)
 
         self.set_button_color()
@@ -107,6 +118,11 @@ class QtGui(QWidget):
         self.play_btn_img.setFixedHeight(90)
         self.play_btn_img.setFixedWidth(180)
         self.play_btn_img.setScaledContents(True)
+        if not self.midi_manager.ports_open:        
+            self.play_btn_img.mousePressEvent = lambda _:\
+                self.midi_controller.process_msg(mido.Message('control_change', control=109, value=127))\
+                if not self.audio_manager.is_playing\
+                else self.midi_controller.process_msg(mido.Message('control_change', control=111, value=127))
         self.layout.addWidget(self.play_btn_img, 4, 0)
 
         self.tempo_img = QLCDNumber(self)

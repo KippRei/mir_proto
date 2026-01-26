@@ -8,6 +8,7 @@ class AudioPlayer():
         # To hold volume levels
         self.mixer = zmkr_audio_engine.Mixer()
         self.load_preprocessed_songs()
+        self.is_playing = False
 
     # Loads all the preprocessed songs into mixer
     def load_preprocessed_songs(self):
@@ -23,9 +24,11 @@ class AudioPlayer():
                     self.mixer.load_preprocessed_song(os.fsdecode(file_name), song_file_name.split('.')[0], np.load(f"{path}/{song_file_name}").astype(np.float64))
 
     def hit_play(self):
+        self.is_playing = True
         self.mixer.play()
     
     def hit_stop(self):
+        self.is_playing = False
         self.mixer.stop()
 
     # Adjust volume of drum, bass, melody, or vocal tracks

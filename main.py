@@ -13,7 +13,7 @@ audio_manager = AudioPlayer()
 midi_manager = MIDIManager()
 midi_controller = MIDIController(audio_manager, midi_manager)
 audio_preprocessor = zmkr.AudioPreprocessor()
-gui_window = qt_gui.QtGui(audio_manager, midi_manager, audio_preprocessor)
+gui_window = qt_gui.QtGui(audio_manager, midi_manager, audio_preprocessor, midi_controller)
 
 
 midi_controller.change_vol_signal.connect(gui_window.set_vol_slider)
