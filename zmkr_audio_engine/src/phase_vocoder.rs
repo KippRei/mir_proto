@@ -52,18 +52,18 @@ impl PhaseVocoder {
 
 
         // TODO: Implement loop for pv
-        // loop {
-        //     let mut channel_map_lock = channel_map_arc_clone.lock().unwrap();
-        //     let channel_map = channel_map_lock.deref_mut();
-        //     for channel in channel_map {
-        //         if channel.is_playing() {
-        //             let raw_data = channel.data.as_ref().unwrap();
-        //             let mut buffer_lock = channel.data.as_ref().lock().unwrap();
-        //             let mut buffer = buffer_lock.deref_mut();
-        //             self.pv_synthesize_frame(&raw_data, channel.curr_frame, &mut buffer, &ifft, &window);
-        //             channel.curr_frame += 1;
-        //         }
-        //     }
+        loop {
+            let mut channel_map_lock = channel_map_arc_clone.lock().unwrap();
+            let channel_map = channel_map_lock.deref_mut();
+            for channel in channel_map {
+                if channel.is_loaded() {
+                    let raw_data = channel.data.as_ref().unwrap();
+                    let analyzed_data = self.pv_analyze(raw_data);
+                    let synthesized_data = self.pv_synthesize_full(&analyzed_data);
+                    let synthesized_data_arc = Arc::new(synthesized_data);
+                    channel.data = Some(synthesized_data_arc);
+                }
+            }
 
             // let channel_map = channel_map_lock.deref_mut();
 
@@ -77,9 +77,9 @@ impl PhaseVocoder {
             //     }
             // }
 
-            // std::mem::drop(channel_map_lock);
-            // thread::sleep(Duration::from_millis(30));
-        //}
+            std::mem::drop(channel_map_lock);
+            thread::sleep(Duration::from_millis(30));
+        }
     }
 
     pub fn pv_analyze(&self, orig_data: &Array2<f64>) -> Array3<Complex<f64>> {

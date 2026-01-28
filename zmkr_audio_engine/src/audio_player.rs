@@ -4,10 +4,13 @@ use numpy::ndarray::{Array2, Array3, ArrayBase, Ix2};
 use numpy::PyReadonlyArray;
 use pyo3::prelude::*;
 use std::collections::HashMap;
+use std::f32::MIN;
 use std::ops::{Add, AddAssign, Deref};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use std::{f32, thread};
+
+use crate::phase_vocoder::PhaseVocoder;
 
 struct PlaybackState {
     curr_frame: usize,
@@ -21,6 +24,7 @@ pub struct Mixer {
     playback: Arc<Mutex<PlaybackState>>,
     song_list: Vec<String>,
     track_volumes: Arc<Mutex<HashMap<String, f64>>>,
+    pv: PhaseVocoder,
 }
 
 #[pymethods]
@@ -34,6 +38,7 @@ impl Mixer {
             playback: Arc::new(Mutex::new(PlaybackState { curr_frame: 0 })),
             song_list: Vec::<String>::new(),
             track_volumes: Arc::new(Mutex::new(Mixer::_init_track_volumes())),
+            pv: PhaseVocoder::new(),
         };
         new_mixer
     }
@@ -309,6 +314,7 @@ impl Mixer {
     ) where
         T: Sample + FromSample<f32> + AddAssign + std::ops::Add, f64: FromSample<T>
     {
+        // TODO: Fix hardcoded 32 bar loop (currently set at 124 bpm)
         let BARS_32: usize = (32f32 * 4f32 * (60f32 / 124f32) * 48000f32).round() as usize;
         // let playback_state_data = &playback_state.data;
         let mut curr_frame = playback_state.curr_frame;
@@ -375,6 +381,10 @@ impl _Channel {
 
     pub fn is_playing(&self) -> bool {
         self.is_playing
+    }
+
+    pub fn is_loaded(&self) -> bool {
+        self.data.is_some()
     }
 
     fn load_data(&mut self, new_data: Arc<Array2<f64>>) {
