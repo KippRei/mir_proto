@@ -9,6 +9,7 @@ use std::ops::{Add, AddAssign, Deref};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use std::{f32, thread};
+use rustfft::{num_complex::Complex};
 
 use crate::phase_vocoder::PhaseVocoder;
 
@@ -19,12 +20,12 @@ struct PlaybackState {
 #[pyclass]
 pub struct Mixer {
     is_playing: Arc<Mutex<bool>>,
-    song_map: HashMap<String, HashMap<String, Arc<Array2<f64>>>>,
+    song_map: HashMap<String, HashMap<String, Arc<Array3<Complex<f64>>>>>,
     channel_map: Arc<Mutex<Vec<_Channel>>>,
     playback: Arc<Mutex<PlaybackState>>,
     song_list: Vec<String>,
     track_volumes: Arc<Mutex<HashMap<String, f64>>>,
-    pv: PhaseVocoder,
+    pv: Arc<Mutex<PhaseVocoder>>,
 }
 
 #[pymethods]
@@ -38,7 +39,7 @@ impl Mixer {
             playback: Arc::new(Mutex::new(PlaybackState { curr_frame: 0 })),
             song_list: Vec::<String>::new(),
             track_volumes: Arc::new(Mutex::new(Mixer::_init_track_volumes())),
-            pv: PhaseVocoder::new(),
+            pv: Arc::new(Mutex::new(PhaseVocoder::new())),
         };
         new_mixer
     }
@@ -52,10 +53,18 @@ impl Mixer {
         if !self.song_list.contains(&song_name) {
             self.song_list.push(song_name.clone());
         }
-        let rust_arr = Arc::new(data.as_array().to_owned());
+        let rust_arr = Arc::new(self.pv.lock().unwrap().pv_analyze(&data.as_array().to_owned()));
         let outer_song_map = self.song_map.entry(song_name).or_insert_with(HashMap::new);
         outer_song_map.insert(track_name, rust_arr);
         Ok(())
+    }
+
+    pub fn start_pv(&mut self) {
+        let pv_clone = self.pv.clone();
+        let channel_map_clone = self.channel_map.clone();
+        thread::spawn(move || {
+            pv_clone.lock().unwrap().start_pv(&channel_map_clone);
+        });
     }
 
     // Note: For testing playback
@@ -82,28 +91,28 @@ impl Mixer {
         Ok(self.song_list.clone())
     }
 
-    // For debugging
-    pub fn print_song_map(&self) {
-        // Iterate over the (key, value) pairs in the map
-        for (song_name, track_map) in self.song_map.iter() {
-            // Print the Song Name header
-            let mut info = String::from("--- Mixer Channel Map Info ---\n");
-            info.push_str(&format!("SONG: '{}'\n", song_name));
+    // // For debugging
+    // pub fn print_song_map(&self) {
+    //     // Iterate over the (key, value) pairs in the map
+    //     for (song_name, track_map) in self.song_map.iter() {
+    //         // Print the Song Name header
+    //         let mut info = String::from("--- Mixer Channel Map Info ---\n");
+    //         info.push_str(&format!("SONG: '{}'\n", song_name));
 
-            // INNER LOOP: Iterate over (track_name, array)
-            for (track_name, array) in track_map.iter() {
-                let shape = array.shape();
-                let shape_str = format!("({}, {})", shape[0], shape[1]);
+    //         // INNER LOOP: Iterate over (track_name, array)
+    //         for (track_name, array) in track_map.iter() {
+    //             let shape = array.shape();
+    //             let shape_str = format!("({}, {})", shape[0], shape[1]);
 
-                // Print the track information indented
-                info.push_str(&format!(
-                    "  - Track: '{}' | Shape: {} | Data Type: f64\n",
-                    track_name, shape_str
-                ));
-            }
-            println!("{}", info);
-        }
-    }
+    //             // Print the track information indented
+    //             info.push_str(&format!(
+    //                 "  - Track: '{}' | Shape: {} | Data Type: f64\n",
+    //                 track_name, shape_str
+    //             ));
+    //         }
+    //         println!("{}", info);
+    //     }
+    // }
 
     pub fn load_track(&mut self, title: String, channel: i32) -> PyResult<bool> {
         // Types of tracks
@@ -326,7 +335,7 @@ impl Mixer {
 
             for channel in channel_map_lock {
                 if channel.is_playing {
-                    let Some(channel_data) = channel.data.clone() else {
+                    let Some(channel_data) = channel.synth_data.clone() else {
                         continue;
                     };
                     let channel_name = &channel.name;
@@ -364,7 +373,8 @@ impl Mixer {
 pub struct _Channel {
     pub name: String,
     pub is_playing: bool,
-    pub data: Option<Arc<Array2<f64>>>,
+    pub data: Option<Arc<Array3<Complex<f64>>>>,
+    pub synth_data: Option<Arc<Array2<f64>>>,
     pub curr_frame: usize,
 }
 
@@ -375,6 +385,7 @@ impl _Channel {
             name: "None".to_string(),
             is_playing: false,
             data: None,
+            synth_data: None,
             curr_frame: 0,
         }
     }
@@ -387,7 +398,7 @@ impl _Channel {
         self.data.is_some()
     }
 
-    fn load_data(&mut self, new_data: Arc<Array2<f64>>) {
+    fn load_data(&mut self, new_data: Arc<Array3<Complex<f64>>>) {
         self.data = Some(new_data);
     }
     fn set_name(&mut self, name: String) {

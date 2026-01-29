@@ -54,16 +54,15 @@ impl PhaseVocoder {
         // TODO: Implement loop for pv
         loop {
             let mut channel_map_lock = channel_map_arc_clone.lock().unwrap();
-            let channel_map = channel_map_lock.deref_mut();
-            for channel in channel_map {
-                if channel.is_loaded() {
-                    let raw_data = channel.data.as_ref().unwrap();
-                    let analyzed_data = self.pv_analyze(raw_data);
-                    let synthesized_data = self.pv_synthesize_full(&analyzed_data);
-                    let synthesized_data_arc = Arc::new(synthesized_data);
-                    channel.data = Some(synthesized_data_arc);
-                }
-            }
+            // let channel_map = channel_map_lock.deref_mut();
+            // for channel in channel_map {
+            //     if channel.is_playing() {
+            //         let raw_data = channel.data.as_ref().unwrap();
+            //         let synthesized_data = self.pv_synthesize_full(&raw_data);
+            //         let synthesized_data_arc = Arc::new(synthesized_data);
+            //         channel.synth_data = Some(synthesized_data_arc);
+            //     }
+            // }
 
             // let channel_map = channel_map_lock.deref_mut();
 

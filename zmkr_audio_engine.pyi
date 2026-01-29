@@ -41,3 +41,6 @@ class Mixer:
 
     # Stops playback
     def stop(self) -> None:...
+
+    # Start phase vocoder
+    def start_pv(self) -> None:...

@@ -8,6 +8,7 @@ class AudioPlayer():
         # To hold volume levels
         self.mixer = zmkr_audio_engine.Mixer()
         self.load_preprocessed_songs()
+        self.mixer.start_pv()
         self.is_playing = False
 
     # Loads all the preprocessed songs into mixer
