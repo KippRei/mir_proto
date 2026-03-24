@@ -10,6 +10,6 @@ PV/Stem Strategy:
 -To identify correct start sarmple keep running sample counter tied to some default BPM (120) then do math with current stem BPM to figure out sample start
 -Maybe use masking if possible (like serato does) to handle stem "separation"
 -Decode on the fly rather than storing as ndarrays (maybe use demucs to get stem mp3s like current implementation but do not convert to ndarrays after)
--tempo for each track will be detected but no tempo preprocessing will be done on song/sometimes (python)
+-tempo for each track will be detected but no tempo preprocessing will be done on song/stems (python)
 -stems need file path and tempo stored in data structure (python->rust dictionary)
 -Rust will handle all decoding, processing, and playing of stems
