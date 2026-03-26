@@ -20,7 +20,7 @@ struct PlaybackState {
 #[pyclass]
 pub struct Mixer {
     is_playing: Arc<Mutex<bool>>,
-    song_map: HashMap<String, HashMap<String, Arc<Array3<Complex<f64>>>>>,
+    song_map: HashMap<String, HashMap<String, Arc<Array2<f64>>>>,
     channel_map: Arc<Mutex<Vec<_Channel>>>,
     playback: Arc<Mutex<PlaybackState>>,
     song_list: Vec<String>,
@@ -53,7 +53,7 @@ impl Mixer {
         if !self.song_list.contains(&song_name) {
             self.song_list.push(song_name.clone());
         }
-        let rust_arr = Arc::new(self.pv.lock().unwrap().pv_analyze(&data.as_array().to_owned()));
+        let rust_arr = Arc::new(data.as_array().to_owned());
         let outer_song_map = self.song_map.entry(song_name).or_insert_with(HashMap::new);
         outer_song_map.insert(track_name, rust_arr);
         Ok(())
@@ -310,7 +310,7 @@ impl Mixer {
             stream.play().expect("Error playing.");
 
             while *is_playing_clone.lock().unwrap() {
-                thread::sleep(Duration::from_millis(50));
+                thread::sleep(Duration::from_millis(10));
             }
         });
     }
@@ -318,7 +318,7 @@ impl Mixer {
     fn real_time_audio<T>(
         data: &mut [T],
         playback_state: &mut PlaybackState,
-        channel_map_lock: &Vec<_Channel>,
+        channel_map: &Vec<_Channel>,
         volumes: &HashMap<String, f64>,
     ) where
         T: Sample + FromSample<f32> + AddAssign + std::ops::Add, f64: FromSample<T>
@@ -327,38 +327,37 @@ impl Mixer {
         let BARS_32: usize = (32f32 * 4f32 * (60f32 / 124f32) * 48000f32).round() as usize;
         // let playback_state_data = &playback_state.data;
         let mut curr_frame = playback_state.curr_frame;
+
+        let active_stems: Vec<(&Array2<f64>, f64)> = channel_map
+        .iter()
+        .filter(|c| c.is_playing)
+        .filter_map(|c| {
+            // Dereference the Arc to get the actual Array2 pointer
+            c.data.as_ref().map(|data_arc| (data_arc.as_ref(), *volumes.get(&c.name).unwrap_or(&1.0)))
+        })
+        .collect();
+
         data.iter_mut().for_each(|s| *s = Sample::EQUILIBRIUM);
 
         for out_frame in data.chunks_mut(2) {
             let mut left_mix: f64 = 0.0;
             let mut right_mix: f64 = 0.0;
 
-            for channel in channel_map_lock {
-                if channel.is_playing {
-                    let Some(channel_data) = channel.synth_data.clone() else {
-                        continue;
-                    };
-                    let channel_name = &channel.name;
-
-                    let channel_data_ref = channel_data.deref();
-                    let channel_vol = volumes[channel_name];
-
-                    let left = channel_data_ref[[curr_frame, 0]];
-                    let right = channel_data_ref[[curr_frame, 1]];
-
-                    left_mix += left * channel_vol;
-                    right_mix += right * channel_vol;
+            for (audio_data, vol) in &active_stems {
+                // Check bounds once to prevent panics
+                if curr_frame < audio_data.shape()[0] {
+                    // ndarray indexing is highly optimized pointer arithmetic
+                    left_mix += audio_data[[curr_frame, 0]] * vol;
+                    right_mix += audio_data[[curr_frame, 1]] * vol;
                 }
             }
 
-            // left_mix = left_mix.clamp(-1.0, 1.0);
-            // right_mix = right_mix.clamp(-1.0, 1.0);
+            left_mix = left_mix.clamp(-1.0, 1.0);
+            right_mix = right_mix.clamp(-1.0, 1.0);
 
-            let left_output = (T::to_sample::<f64>(out_frame[0]) + (left_mix as f64)).clamp(-1.0, 1.0);
-            let right_output = (T::to_sample::<f64>(out_frame[1]) + (right_mix as f64)).clamp(-1.0, 1.0);
+            out_frame[0] = T::from_sample(left_mix as f32);
+            out_frame[1] = T::from_sample(right_mix as f32);
 
-            out_frame[0] = T::from_sample(left_output as f32);
-            out_frame[1] = T::from_sample(right_output as f32);
             curr_frame += 1;
 
             if curr_frame == BARS_32 {
@@ -373,7 +372,7 @@ impl Mixer {
 pub struct _Channel {
     pub name: String,
     pub is_playing: bool,
-    pub data: Option<Arc<Array3<Complex<f64>>>>,
+    pub data: Option<Arc<Array2<f64>>>,
     pub synth_data: Option<Arc<Array2<f64>>>,
     pub curr_frame: usize,
 }
@@ -398,7 +397,7 @@ impl _Channel {
         self.data.is_some()
     }
 
-    fn load_data(&mut self, new_data: Arc<Array3<Complex<f64>>>) {
+    fn load_data(&mut self, new_data: Arc<Array2<f64>>) {
         self.data = Some(new_data);
     }
     fn set_name(&mut self, name: String) {

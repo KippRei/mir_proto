@@ -2,7 +2,6 @@ use pyo3::prelude::*;
 
 mod audio_player;
 mod phase_vocoder;
-mod jneem_pv;
 
 use audio_player::Mixer;
 

@@ -8,22 +8,21 @@ class AudioPlayer():
         # To hold volume levels
         self.mixer = zmkr_audio_engine.Mixer()
         self.load_preprocessed_songs()
-        # self.mixer.start_pv()
+        self.mixer.start_pv()
         self.is_playing = False
 
     # Loads all the preprocessed songs into mixer
     def load_preprocessed_songs(self):
-        return
         # Load all preprocessed songs into songs map
-        # song_dir = './preprocessed_audio'
-        # song_dir_encoded = os.fsencode(song_dir)
-        # for file_name in os.listdir(song_dir_encoded):
-        #     path = f"{song_dir}/{os.fsdecode(file_name)}"
-        #     curr_dir = os.fsencode(path)
-        #     if os.path.isdir(curr_dir):
-        #         for file in os.listdir(curr_dir):
-        #             song_file_name = os.fsdecode(file)
-        #             self.mixer.load_preprocessed_song(os.fsdecode(file_name), song_file_name.split('.')[0], np.load(f"{path}/{song_file_name}").astype(np.float64))
+        song_dir = './preprocessed_audio'
+        song_dir_encoded = os.fsencode(song_dir)
+        for file_name in os.listdir(song_dir_encoded):
+            path = f"{song_dir}/{os.fsdecode(file_name)}"
+            curr_dir = os.fsencode(path)
+            if os.path.isdir(curr_dir):
+                for file in os.listdir(curr_dir):
+                    song_file_name = os.fsdecode(file)
+                    self.mixer.load_preprocessed_song(os.fsdecode(file_name), song_file_name.split('.')[0], np.load(f"{path}/{song_file_name}").astype(np.float64))
 
     def hit_play(self):
         self.is_playing = True
