@@ -10,6 +10,7 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use std::{f32, thread};
 use rustfft::{num_complex::Complex};
+use ringbuf::{HeapProd, HeapCons, HeapRb, traits::*};
 
 use crate::phase_vocoder::PhaseVocoder;
 
@@ -25,13 +26,21 @@ pub struct Mixer {
     playback: Arc<Mutex<PlaybackState>>,
     song_list: Vec<String>,
     track_volumes: Arc<Mutex<HashMap<String, f64>>>,
-    pv: Arc<Mutex<PhaseVocoder>>,
+    prod_raw: Option<HeapProd<f32>>,
+    cons_raw: Option<HeapCons<f32>>,
+    prod_proc: Option<HeapProd<f32>>,
+    cons_proc: Option<HeapCons<f32>>,
 }
 
 #[pymethods]
 impl Mixer {
     #[new]
     pub fn new() -> Self {
+        let rb_raw = Arc::new(HeapRb::<f32>::new(4096));
+        let rb_proc = HeapRb::<f32>::new(4096);
+        let (prod_r, cons_r) = rb_raw.split();
+        let (prod_p, cons_p) = rb_proc.split();
+
         let new_mixer = Mixer {
             is_playing: Arc::new(Mutex::new(false)),
             song_map: HashMap::new(),
@@ -39,7 +48,10 @@ impl Mixer {
             playback: Arc::new(Mutex::new(PlaybackState { curr_frame: 0 })),
             song_list: Vec::<String>::new(),
             track_volumes: Arc::new(Mutex::new(Mixer::_init_track_volumes())),
-            pv: Arc::new(Mutex::new(PhaseVocoder::new())),
+            prod_raw: Some(prod_r),
+            cons_raw: Some(cons_r),
+            prod_proc: Some(prod_p),
+            cons_proc: Some(cons_p),
         };
         new_mixer
     }
@@ -59,11 +71,30 @@ impl Mixer {
         Ok(())
     }
 
-    pub fn start_pv(&mut self) {
-        let pv_clone = self.pv.clone();
+    pub fn start_audio_processing(&mut self) {
         let channel_map_clone = self.channel_map.clone();
+        let Some(mut prod) = self.prod_raw.take() else {return;};
+        let is_playing_clone = self.is_playing.clone();
+        let playback_clone = self.playback.clone();
+        let channel_map_clone = self.channel_map.clone();
+        let volume_clone = self.track_volumes.clone();
+
         thread::spawn(move || {
-            pv_clone.lock().unwrap().start_pv(&channel_map_clone);
+            let channel_map_lock = channel_map_clone.lock().unwrap();
+            let channel_map_ref = channel_map_lock.deref();
+            let mut playback_state = playback_clone.lock().unwrap();
+            let volume_lock = volume_clone.lock().unwrap();
+            let volume_ref = &volume_lock.deref();
+            let mut data: [f32; 512] = [0f32; 512];
+
+            loop {
+                Mixer::real_time_audio(&mut data, &mut playback_state, &channel_map_lock, volume_ref);
+                if prod.vacant_len() < data.len() {
+                    thread::sleep(Duration::from_millis(1));
+                }
+                prod.push_slice(&data[..]);
+                thread::sleep(Duration::from_millis(1));
+            }
         });
     }
 
@@ -248,21 +279,12 @@ impl Mixer {
         let volume_clone = self.track_volumes.clone();
 
         thread::spawn(move || {
+            // let cons = self.cons_raw.take();
             let stream = match sample_format {
                 SampleFormat::F32 => device.build_output_stream(
                     &config,
                     move |data: &mut [f32], _: &cpal::OutputCallbackInfo| {
-                        let channel_map_lock = channel_map_clone.lock().unwrap();
-                        let channel_map_ref = channel_map_lock.deref();
-                        let mut playback_state = playback_clone.lock().unwrap();
-                        let volume_lock = volume_clone.lock().unwrap();
-                        let volume_ref = &volume_lock.deref();
-                        Mixer::real_time_audio(
-                            data,
-                            &mut playback_state,
-                            channel_map_ref,
-                            volume_ref,
-                        );
+                        
                     },
                     err_fn,
                     None,
@@ -365,6 +387,15 @@ impl Mixer {
             }
         }
         playback_state.curr_frame = curr_frame;
+    }
+
+    fn get_audio<T>(data: &mut [T]) {
+        for out_frame in data.chunks(2) {
+            let left = self.cons_raw.unwrap().try_pop().unwrap();
+            let right = self.cons_raw.unwrap().try_pop().unwrap();
+            out_frame[0] = left;
+            out_frame[1] = right; 
+        }
     }
 }
 

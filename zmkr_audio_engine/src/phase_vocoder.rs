@@ -8,36 +8,37 @@ use std::{
 
 use ndarray::{s, Array, Array2, Array3};
 use rustfft::{num_complex::Complex, Fft, FftPlanner};
+use ringbuf::{traits::*, HeapRb};
 
 use crate::audio_player::_Channel;
 
 pub struct PhaseVocoder {
     curr_frame: usize,
-    prev_phase_map: Vec<f64>,
+    phase_acc: Vec<f64>,
     prev_synth_map: Vec<Complex<f64>>,
 }
 
 impl PhaseVocoder {
-    const WINDOW_SZ: usize = 1024;
+    const WINDOW_SZ: usize = 2048;
     const ANALYSIS_HOP_SZ: usize = Self::WINDOW_SZ / 4;
     const SYNTHESIS_HOP_SZ: usize = Self::ANALYSIS_HOP_SZ;
     pub fn new() -> Self {
         let mut pv = PhaseVocoder {
             curr_frame: 0,
-            prev_phase_map: Vec::<f64>::new(),
+            phase_acc: Vec::<f64>::new(),
             prev_synth_map: Vec::<Complex<f64>>::new(),
         };
 
         for _ in 0..Self::WINDOW_SZ {
             let num = Complex::<f64>::new(0f64, 0f64);
-            pv.prev_phase_map.push(0f64);
+            pv.phase_acc.push(0f64);
             pv.prev_synth_map.push(num);
         };
 
         pv
     }
 
-    pub fn start_pv(&mut self, channel_map: &Arc<Mutex<Vec<_Channel>>>) {
+    pub fn start_pv(channel_map: &Arc<Mutex<Vec<_Channel>>>) {
         let channel_map_arc_clone = channel_map.clone();
         let mut planner: FftPlanner<f64> = FftPlanner::new();
         let ifft: Arc<dyn Fft<f64>> = planner.plan_fft_inverse(Self::WINDOW_SZ);
@@ -46,7 +47,7 @@ impl PhaseVocoder {
         // let num_channels = 2;
         // let output_len = (num_frames - 1) * Self::SYNTHESIS_HOP_SZ + Self::WINDOW_SZ;
 
-        let window: Vec<f64> = (0..Self::WINDOW_SZ)
+        let hann_window: Vec<f64> = (0..Self::WINDOW_SZ)
             .map(|n| 0.5 * (1.0 - (2.0 * PI * n as f64 / (Self::WINDOW_SZ as f64 - 1.0)).cos()))
             .collect();
 
@@ -179,44 +180,5 @@ impl PhaseVocoder {
         }
 
         output_data
-    }
-
-    pub fn pv_synthesize_frame(
-        &mut self,
-        spectral_data: &Array3<Complex<f64>>,
-        curr_frame_idx: usize,
-        output_buffer: &mut Array2<f64>,
-        ifft: &Arc<dyn Fft<f64>>,
-        window: &Vec<f64>,
-    ) {
-        let analysis_frame = spectral_data.slice(s![curr_frame_idx, .., ..]);
-        let synth_start_idx = curr_frame_idx * Self::SYNTHESIS_HOP_SZ;
-
-        for channel_idx in 0..2 {
-            let mut ifft_buffer = Self::process_frame(self, analysis_frame.slice(s![.., channel_idx]).to_vec());
-            ifft.process(&mut ifft_buffer);
-
-            for (i, val) in ifft_buffer.iter().enumerate() {
-                let real_sample = (val.re / Self::WINDOW_SZ as f64) * (Self::SYNTHESIS_HOP_SZ as f64/ Self::WINDOW_SZ as f64);
-                let windowed_sample = real_sample * window[i];
-
-                let out_idx = synth_start_idx + i;
-                // if out_idx < 10 {
-                //     println!("{},{}",curr_frame_idx, windowed_sample);
-                // }
-                output_buffer[[out_idx, channel_idx]] += windowed_sample;
-            }
-        }
-    }
-
-    fn process_frame(&mut self, frame: Vec<Complex<f64>>) -> Vec<Complex<f64>> {
-        let mut processed_frame = Vec::<Complex<f64>>::new();
-        for (i, val) in frame.iter().enumerate() {
-            let prev_phase = &self.prev_phase_map[i];
-            let prev_synth = &self.prev_synth_map[i];
-            let curr_freq = &frame[i];
-
-        }
-        processed_frame
     }
 }

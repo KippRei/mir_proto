@@ -3,7 +3,7 @@ import pyrubberband as pyrb
 import os
 
 def change_tempo(folder_to_process, old_tempo):
-    #change tempo to predefined tempo (128 maybe?)
+    #change tempo to predefined tempo
     NEW_TEMPO = 124
 
     in_filenames = [

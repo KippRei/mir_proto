@@ -1,6 +1,6 @@
 from beat_this.inference import File2Beats
 
-def get_bpm(audio_path) -> int:
+def get_bpm(audio_path):
     file2beats = File2Beats(checkpoint_path="final0", device="cuda", dbn=False)
     beats, downbeats = file2beats(audio_path)
 
