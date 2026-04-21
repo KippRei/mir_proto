@@ -1,184 +1,106 @@
 use std::{
-    f64::consts::PI,
+    f32::consts::PI,
     ops::DerefMut,
     sync::{Arc, Mutex},
     thread,
     time::Duration,
 };
 
-use ndarray::{s, Array, Array2, Array3};
 use rustfft::{num_complex::Complex, Fft, FftPlanner};
 use ringbuf::{traits::*, HeapRb};
+use symphonia::core::dsp::complex;
 
-use crate::audio_player::_Channel;
 
 pub struct PhaseVocoder {
     curr_frame: usize,
-    phase_acc: Vec<f64>,
-    prev_synth_map: Vec<Complex<f64>>,
+    phase_acc: Vec<f32>,
+    prev_synth_map: Vec<Complex<f32>>,
+    windowing_func: Vec<f32>,
+    fft: Arc<dyn Fft<f32>>,
+    ifft: Arc<dyn Fft<f32>>,
+    fft_scratch_buf: Vec<Complex<f32>>,
+    fft_buf: Vec<Complex<f32>>,
+    fft_out: [Vec<Complex<f32>>; 2],
+    pub output_buf: Vec<f32>,
 }
 
 impl PhaseVocoder {
-    const WINDOW_SZ: usize = 2048;
+    pub const WINDOW_SZ: usize = 2048;
     const ANALYSIS_HOP_SZ: usize = Self::WINDOW_SZ / 4;
     const SYNTHESIS_HOP_SZ: usize = Self::ANALYSIS_HOP_SZ;
     pub fn new() -> Self {
+        let hann_window: Vec<f32> = (0..Self::WINDOW_SZ)
+            .map(|n| 0.5 * (1.0 - (2.0 * PI * n as f32 / (Self::WINDOW_SZ as f32 - 1.0)).cos()))
+            .collect();
+
+        let mut planner = FftPlanner::new();
+        let fft = planner.plan_fft_forward(Self::WINDOW_SZ);
+        let ifft = planner.plan_fft_inverse(Self::WINDOW_SZ);
+        let fft_scratch_buf = vec![Complex::new(0.0f32, 0.0f32); fft.get_inplace_scratch_len()];
+        let fft_buf = vec![Complex::new(0.0f32, 0.0f32); Self::WINDOW_SZ];
+        let output_buf = vec![0.0f32; Self::WINDOW_SZ * 2];
+        let fft_out = [
+            vec![Complex::new(0.0f32, 0.0f32); Self::WINDOW_SZ],
+            vec![Complex::new(0.0f32, 0.0f32); Self::WINDOW_SZ]
+        ];
+        
         let mut pv = PhaseVocoder {
             curr_frame: 0,
-            phase_acc: Vec::<f64>::new(),
-            prev_synth_map: Vec::<Complex<f64>>::new(),
+            phase_acc: Vec::<f32>::new(),
+            prev_synth_map: Vec::<Complex<f32>>::new(),
+            windowing_func: hann_window,
+            fft,
+            ifft,
+            fft_scratch_buf,
+            fft_buf,
+            output_buf,
+            fft_out,
         };
 
         for _ in 0..Self::WINDOW_SZ {
-            let num = Complex::<f64>::new(0f64, 0f64);
-            pv.phase_acc.push(0f64);
+            let num = Complex::<f32>::new(0f32, 0f32);
+            pv.phase_acc.push(0f32);
             pv.prev_synth_map.push(num);
         };
 
         pv
     }
 
-    pub fn start_pv(channel_map: &Arc<Mutex<Vec<_Channel>>>) {
-        let channel_map_arc_clone = channel_map.clone();
-        let mut planner: FftPlanner<f64> = FftPlanner::new();
-        let ifft: Arc<dyn Fft<f64>> = planner.plan_fft_inverse(Self::WINDOW_SZ);
-
-        // let num_frames = spectral_data.shape()[0];
-        // let num_channels = 2;
-        // let output_len = (num_frames - 1) * Self::SYNTHESIS_HOP_SZ + Self::WINDOW_SZ;
-
-        let hann_window: Vec<f64> = (0..Self::WINDOW_SZ)
-            .map(|n| 0.5 * (1.0 - (2.0 * PI * n as f64 / (Self::WINDOW_SZ as f64 - 1.0)).cos()))
-            .collect();
-
-
-        // TODO: Implement loop for pv
-        loop {
-            let mut channel_map_lock = channel_map_arc_clone.lock().unwrap();
-            // let channel_map = channel_map_lock.deref_mut();
-            // for channel in channel_map {
-            //     if channel.is_playing() {
-            //         let raw_data = channel.data.as_ref().unwrap();
-            //         let synthesized_data = self.pv_synthesize_full(&raw_data);
-            //         let synthesized_data_arc = Arc::new(synthesized_data);
-            //         channel.synth_data = Some(synthesized_data_arc);
-            //     }
-            // }
-
-            // let channel_map = channel_map_lock.deref_mut();
-
-            // for j in channel_map {
-            //     if j.is_loaded() {
-            //         let mut buffer_lock = j.data.as_ref().lock().unwrap();
-            //         let buffer = buffer_lock.deref_mut();
-            //         for k in buffer {
-            //             println!("{}", k);
-            //         }
-            //     }
-            // }
-
-            std::mem::drop(channel_map_lock);
-            thread::sleep(Duration::from_millis(30));
+    pub fn pv_analyze(&mut self, orig_data: &[f32]) {
+        for channel_idx in 0..2 {
+            for n in 0..Self::WINDOW_SZ {
+                let sample = orig_data[n * 2 + channel_idx];
+                // WARNING: Removed window for passthrough testing
+                // self.fft_buf[n] = Complex::new(sample * self.windowing_func[n], 0.0);
+                self.fft_buf[n] = Complex::new(sample, 0.0);
+            }
+        
+            self.fft.process_with_scratch(&mut self.fft_buf, &mut self.fft_scratch_buf);
+            
+            self.fft_out[channel_idx].copy_from_slice(&self.fft_buf);
         }
     }
 
-    pub fn pv_analyze(&self, orig_data: &Array2<f64>) -> Array3<Complex<f64>> {
-        let mut planner = FftPlanner::new();
-        let fft = planner.plan_fft_forward(Self::WINDOW_SZ);
-
-        // Get number of samples
-        let num_samples = orig_data.shape()[0];
-
-        // Calculate number of frames for our output array
-        let num_frames = ((num_samples - Self::WINDOW_SZ) / Self::ANALYSIS_HOP_SZ) + 1;
-
-        // Will hold spectral data after STFTs (reshaped before returning with .into_shape((num_frames, Self::WINDOW_SZ, 2)))
-        let mut spectral_frames = vec![Complex::new(0.0, 0.0); num_frames * Self::WINDOW_SZ * 2];
-
-        // Holds starting index for current frame
-        let mut frame_start = 0;
-        // Holds multiplier to get to get correct index for spectral_frames
-        let mut frame_idx_mult = 0;
-
-        // The Hann Window vector for windowing frames
-        let window: Vec<f64> = (0..Self::WINDOW_SZ)
-            .map(|n| 0.5 * (1.0 - (2.0 * PI * n as f64 / (Self::WINDOW_SZ as f64 - 1.0)).cos()))
-            .collect();
+    pub fn pv_synthesize(&mut self) {
+        self.output_buf.fill(0.0);
 
         for channel_idx in 0..2 {
-            while frame_start + Self::WINDOW_SZ <= num_samples {
-                let mut buffer: Vec<Complex<f64>> = (0..Self::WINDOW_SZ)
-                    .map(|n| {
-                        // Get the original sample
-                        let sample_value = orig_data[[frame_start + n, channel_idx]];
-                        // Apply windowing function
-                        let windowed_sample = sample_value * window[n];
-                        // Converts data to format FFT needs (real + imaginary)
-                        Complex::new(windowed_sample, 0.0)
-                    })
-                    .collect();
+            self.fft_buf.copy_from_slice(&self.fft_out[channel_idx]);
 
-                // Perform FFT on buffer
-                fft.process(&mut buffer);
+            self.ifft.process_with_scratch(&mut self.fft_buf, &mut self.fft_scratch_buf);
 
-                // Copy result into spectral_frames vector
-                for i in 0..Self::WINDOW_SZ {
-                    spectral_frames[(frame_idx_mult * Self::WINDOW_SZ) + i] = buffer[i];
-                }
-
-                frame_start += Self::ANALYSIS_HOP_SZ;
-                frame_idx_mult += 1;
+            for n in 0..Self::WINDOW_SZ {
+                // WARNING: Removed windowing for passthrough test
+                // let sample = (self.fft_buf[n].re / Self::WINDOW_SZ as f32) * self.windowing_func[n];
+                
+                let sample = self.fft_buf[n].re / Self::WINDOW_SZ as f32;
+                self.output_buf[n * 2 + channel_idx] = sample;
             }
-            frame_start = 0;
         }
-
-        // Convert vector into ndarray so we can change shape for return
-        let spectral_frames_arr = Array::from_vec(spectral_frames);
-        // println!("spectral_frames_count:{:?}", spectral_frames_arr.shape());
-        // println!("frames:{:?},window_sz:{:?}", num_frames, Self::WINDOW_SZ);
-        // println!("new arr count:{}", num_frames*Self::WINDOW_SZ*2);
-
-        // Take ownership and change shape of spectral frames array and return
-        spectral_frames_arr
-            .to_shape((num_frames, Self::WINDOW_SZ, 2))
-            .unwrap()
-            .into_owned()
     }
 
-    pub fn pv_synthesize_full(&self, spectral_data: &Array3<Complex<f64>>) -> Array2<f64> {
-        let mut planner = FftPlanner::new();
-        let ifft = planner.plan_fft_inverse(Self::WINDOW_SZ);
-
-        let num_frames = spectral_data.shape()[0];
-        let num_channels = 2;
-
-        let output_len = (num_frames - 1) * Self::SYNTHESIS_HOP_SZ + Self::WINDOW_SZ;
-
-        let mut output_data = Array2::<f64>::zeros((output_len, num_channels));
-
-        let window: Vec<f64> = (0..Self::WINDOW_SZ)
-            .map(|n| 0.5 * (1.0 - (2.0 * PI * n as f64 / (Self::WINDOW_SZ as f64 - 1.0)).cos()))
-            .collect();
-
-        for frame_idx in 0..num_frames {
-            let analysis_frame = spectral_data.slice(s![frame_idx, .., ..]);
-            let synth_start_idx = frame_idx * Self::SYNTHESIS_HOP_SZ;
-
-            for channel_idx in 0..2 {
-                let mut ifft_buffer = analysis_frame.slice(s![.., channel_idx]).to_vec();
-                ifft.process(&mut ifft_buffer);
-
-                for (i, val) in ifft_buffer.iter().enumerate() {
-                    let real_sample = val.re / Self::WINDOW_SZ as f64;
-                    let windowed_sample = real_sample * window[i];
-
-                    let out_idx = synth_start_idx + i;
-
-                    output_data[[out_idx, channel_idx]] += windowed_sample;
-                }
-            }
-        }
-
-        output_data
+    pub fn pv_run(&mut self, orig_data: &[f32], tempo: i32) {
+        self.pv_analyze(orig_data);
+        self.pv_synthesize();
     }
 }

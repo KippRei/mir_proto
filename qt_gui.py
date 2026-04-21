@@ -1,3 +1,9 @@
+"""
+The QtGui class which serves as the main window for the application.
+It manages all GUI window elements like: volume sliders, button text/color, and song list.
+Allows user to load channels/tracks by dragging song from song list to pad.
+"""
+
 from PyQt6.QtWidgets import QSlider, QWidget, QGridLayout, QListWidget, QFileDialog, QPushButton, QLabel, QLCDNumber
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPixmap, QIcon, QFont, QFontDatabase
@@ -6,9 +12,20 @@ import mido
 from functools import partial
 
 class QtGui(QWidget):
+    """
+    The main GUI for the program.
+    
+    Attributes
+    ----------
+    PLAY_BTN_PLAYING_IMG : str
+        File path for the "Playing" image.
+    PLAY_BTN_STOPPED_IMG : str
+        File path for the "Stopped" image.
+    """
     PLAY_BTN_PLAYING_IMG = './images/g_playing_edit.png'
     PLAY_BTN_STOPPED_IMG = './images/g_stopped_edit.png'
 
+    # Initializes the QtGui window.
     def __init__(self, audio_manager, midi_manager, audio_preprocessor, midi_controller):
         super().__init__()
         self.audio_manager = audio_manager
@@ -199,6 +216,15 @@ class QtGui(QWidget):
         self.tempo_img.display(curr_tempo + amt)
 
     def set_play_btn(self, on_off):
+        """
+        Updates the Play/Stop button image based on the
+        current playback state.
+    
+        Parameters
+        ----------
+        on_off : bool
+            True if audio is playing (display PLAYING_IMG) and False if not (display STOPPED_IMG).
+        """
         if on_off:
             self.play_btn_img.setPixmap(QPixmap(self.PLAY_BTN_PLAYING_IMG))
         else:
@@ -215,8 +241,11 @@ class QtGui(QWidget):
             self.song_arr.append(SongListItem(song_name, self.song_list))
         self.layout.addWidget(self.song_list, 1, 0, 2, 1, alignment=Qt.AlignmentFlag.AlignLeft)
 
-    # Open file to preprocess
     def open_file_to_preprocess(self):
+        """
+        Opens a QFileDialog (PyQt) to select audio files for preprocessing.
+        Sends the selected file to audio preprocessor and updates the song list when done preprocessing.
+        """
         file_dialog = QFileDialog(self)
         file_dialog.setFileMode(QFileDialog.FileMode.ExistingFiles)
         file_dialog.setViewMode(QFileDialog.ViewMode.Detail)
@@ -251,7 +280,7 @@ class QtGui(QWidget):
             case 'vocal':
                 self.vocal_vol.setValue(vol)
 
-    # Sets GUI button colors
+    # Updates color of buttons on GUI to match the color of the USB controller pads.
     # TODO: Right now this iterates over every button every time it is updated
     # TODO (cont): Ideally it would only update the button that is pressed (and its column)
     def set_button_color(self):   

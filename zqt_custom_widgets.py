@@ -1,3 +1,6 @@
+"""
+Holds all the custom PyQt widgets used by the GUI
+"""
 from PyQt6.QtWidgets import QToolButton, QListWidgetItem, QListWidget, QLabel
 from PyQt6.QtCore import QSize, pyqtSignal, Qt, QMimeData
 from PyQt6.QtGui import QFont, QFontDatabase, QDrag

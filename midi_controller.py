@@ -1,3 +1,8 @@
+"""
+This is the MIDI Controller which is responsible for polling the USB MIDI controller,
+receiving MIDI messages, and emitting signals to main.py
+"""
+
 from PyQt6.QtCore import QTimer, QObject, pyqtSignal
 
 class MIDIController(QObject):

@@ -1,3 +1,8 @@
+"""
+The MIDIManager class opens ports USB MIDI controller, creates new thread to listen for MIDI messages,
+manages USB MIDI controller pad color.
+"""
+
 import mido
 from queue import Queue
 import threading
@@ -24,6 +29,7 @@ PAD_OFF_COLOR = PURPLE
 PAD_ON_COLOR = GREEN
 
 class MIDIManager():
+    #Initializes the MIDI Manager, attempts to open ports, sets the MIDI mode, and starts the asynchronous listener thread if ports are found.
     def __init__(self):
         self.ports_open = False
         self.pad_color_map = {i: PAD_OFF_COLOR for i in range(36, 52)} # Creates map that holds pad/note # as key and [r,g,b] as value
@@ -75,12 +81,15 @@ class MIDIManager():
                 self.out_port.send(mido.Message('note_on', channel=2, note=k, velocity=v[1]))
                 self.out_port.send(mido.Message('note_on', channel=3, note=k, velocity=v[2]))
 
+    # Generator that retrieves the current MIDI messages from the queue until it is empty.
     def get_messages(self):
         while not self.midi_msg_queue.empty():
             yield self.midi_msg_queue.get()
 
+    # Returns the pad color map.
     def get_pad_color_map(self):
         return self.pad_color_map
-
+    
+    # Returns requested RGB color values for button on or off state.
     def get_pad_on_off_color(self, val):
         return PAD_OFF_COLOR if val == 'off' else PAD_ON_COLOR

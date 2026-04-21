@@ -5,6 +5,7 @@ use numpy::PyReadonlyArray;
 use pyo3::prelude::*;
 use std::collections::HashMap;
 use std::f32::MIN;
+use std::io::SeekFrom;
 use std::ops::{Add, AddAssign, Deref};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
@@ -19,6 +20,8 @@ struct PlaybackState {
 }
 
 #[pyclass]
+/// Mixer implemented in Rust for speed and memory safety
+/// Takes music as ndarrays from Python rust_audio_manager.py
 pub struct Mixer {
     is_playing: Arc<Mutex<bool>>,
     song_map: HashMap<String, HashMap<String, Arc<Array2<f64>>>>,
@@ -26,20 +29,18 @@ pub struct Mixer {
     playback: Arc<Mutex<PlaybackState>>,
     song_list: Vec<String>,
     track_volumes: Arc<Mutex<HashMap<String, f64>>>,
-    prod_raw: Option<HeapProd<f32>>,
-    cons_raw: Option<HeapCons<f32>>,
+    prod_raw: Arc<Mutex<Option<HeapProd<f32>>>>,
     prod_proc: Option<HeapProd<f32>>,
     cons_proc: Option<HeapCons<f32>>,
+    pv: Arc<Mutex<PhaseVocoder>>,
 }
 
 #[pymethods]
 impl Mixer {
     #[new]
     pub fn new() -> Self {
-        let rb_raw = Arc::new(HeapRb::<f32>::new(4096));
-        let rb_proc = HeapRb::<f32>::new(4096);
-        let (prod_r, cons_r) = rb_raw.split();
-        let (prod_p, cons_p) = rb_proc.split();
+        let (prod_r, cons_r) = HeapRb::<f32>::new(PhaseVocoder::WINDOW_SZ * 4).split();
+        let (prod_p, cons_p) = HeapRb::<f32>::new(PhaseVocoder::WINDOW_SZ * 2).split();
 
         let new_mixer = Mixer {
             is_playing: Arc::new(Mutex::new(false)),
@@ -48,14 +49,15 @@ impl Mixer {
             playback: Arc::new(Mutex::new(PlaybackState { curr_frame: 0 })),
             song_list: Vec::<String>::new(),
             track_volumes: Arc::new(Mutex::new(Mixer::_init_track_volumes())),
-            prod_raw: Some(prod_r),
-            cons_raw: Some(cons_r),
+            prod_raw: Arc::new(Mutex::new(Some(prod_r))),
             prod_proc: Some(prod_p),
             cons_proc: Some(cons_p),
+            pv: Arc::new(Mutex::new(PhaseVocoder::new())),
         };
         new_mixer
     }
 
+    /// Loads songs from Python rust_audio_manager script
     pub fn load_preprocessed_song(
         &mut self,
         song_name: String,
@@ -71,28 +73,29 @@ impl Mixer {
         Ok(())
     }
 
+    /// Starts PV and begins processing audio data from ring buffer
     pub fn start_audio_processing(&mut self) {
-        let channel_map_clone = self.channel_map.clone();
-        let Some(mut prod) = self.prod_raw.take() else {return;};
-        let is_playing_clone = self.is_playing.clone();
+        let prod_raw_arc = self.prod_raw.clone();
         let playback_clone = self.playback.clone();
         let channel_map_clone = self.channel_map.clone();
         let volume_clone = self.track_volumes.clone();
 
         thread::spawn(move || {
-            let channel_map_lock = channel_map_clone.lock().unwrap();
-            let channel_map_ref = channel_map_lock.deref();
-            let mut playback_state = playback_clone.lock().unwrap();
-            let volume_lock = volume_clone.lock().unwrap();
-            let volume_ref = &volume_lock.deref();
             let mut data: [f32; 512] = [0f32; 512];
 
             loop {
-                Mixer::real_time_audio(&mut data, &mut playback_state, &channel_map_lock, volume_ref);
-                if prod.vacant_len() < data.len() {
-                    thread::sleep(Duration::from_millis(1));
+                let mut prod_lock = prod_raw_arc.lock().unwrap();
+                if let Some(prod) = prod_lock.as_mut() {
+                    if prod.vacant_len() >= data.len() {
+                        let channel_map_lock = channel_map_clone.lock().unwrap();
+                        let mut playback_state = playback_clone.lock().unwrap();
+                        let volume_lock = volume_clone.lock().unwrap();
+                        let volume_ref = &volume_lock.deref();
+
+                        Mixer::real_time_audio(&mut data, &mut playback_state, &channel_map_lock, volume_ref);
+                        prod.push_slice(&data);
+                    }
                 }
-                prod.push_slice(&data[..]);
                 thread::sleep(Duration::from_millis(1));
             }
         });
@@ -118,6 +121,7 @@ impl Mixer {
     //     }
     // }
 
+    /// Gets the song list (list of playing song)
     pub fn get_song_list(&self) -> PyResult<Vec<String>> {
         Ok(self.song_list.clone())
     }
@@ -145,6 +149,7 @@ impl Mixer {
     //     }
     // }
 
+    /// Loads stem when button pressed on MIDI controller
     pub fn load_track(&mut self, title: String, channel: i32) -> PyResult<bool> {
         // Types of tracks
         const TRACK_TYPES: [&'static str; 4] = ["drum", "bass", "melody", "vocal"];
@@ -189,6 +194,7 @@ impl Mixer {
         Ok(true)
     }
 
+    /// Adjusts stem type volume
     pub fn adj_track_vol(&mut self, track: String, adjustment: f64) {
         let mut track_vol_lock = self.track_volumes.lock().unwrap();
         if let Some(track_vol) = track_vol_lock.get_mut(&track) {
@@ -219,10 +225,48 @@ impl Mixer {
         Ok(return_list)
     }
 
-    pub fn play(&self) {
-        let mut is_playing_lock = self.is_playing.lock().unwrap();
-        *is_playing_lock = true;
-        Mixer::_play(self);
+    pub fn play(&mut self) {
+        let (new_prod_raw, mut new_cons_raw) = HeapRb::<f32>::new(PhaseVocoder::WINDOW_SZ * 8).split();
+        let (mut new_prod_processed, new_cons_processed) = HeapRb::<f32>::new(PhaseVocoder::WINDOW_SZ * 8).split();
+        
+        {
+            let mut prod_lock = self.prod_raw.lock().unwrap();
+            *prod_lock = Some(new_prod_raw);
+        }
+
+        let is_playing_clone = self.is_playing.clone();
+        // Set is_playing flag to indicate active playback
+        *is_playing_clone.lock().unwrap() = true;
+
+        let pv_clone = self.pv.clone();
+
+        // PV thread
+        thread::spawn(move || {
+            let mut acc_buf = vec![0.0f32; PhaseVocoder::WINDOW_SZ * 2];
+            let mut sample_count = 0;
+            
+            while *is_playing_clone.lock().unwrap() {
+                while sample_count < acc_buf.len() {
+                    if let Some(sample) = new_cons_raw.try_pop() {
+                        acc_buf[sample_count] = sample;
+                        sample_count += 1;
+                    } else { break; }
+                }
+
+                if sample_count == acc_buf.len() {
+                    let mut pv = pv_clone.lock().unwrap();
+                    pv.pv_run(&acc_buf, 124);
+                    while new_prod_processed.vacant_len() < pv.output_buf.len() {
+                        thread::sleep(Duration::from_millis(1));
+                    }
+                    new_prod_processed.push_slice(&pv.output_buf);
+                    sample_count = 0;
+                }
+                thread::sleep(Duration::from_millis(10));
+            }
+        });
+
+        Mixer::_play(self, new_cons_processed);
     }
 
     pub fn stop(&mut self) {
@@ -230,6 +274,8 @@ impl Mixer {
         let mut playback_state = self.playback.lock().unwrap();
         playback_state.curr_frame = 0;
         *is_playing_lock = false;
+
+        *self.prod_raw.lock().unwrap() = None;
     }
 }
 
@@ -252,7 +298,8 @@ impl Mixer {
         new_vol_map
     }
 
-    pub fn _play(&self) {
+    /// Starts separate thread for playing of music (sends samples to audio card)
+    pub fn _play(&self, mut cons: HeapCons<f32>) {
         let host = cpal::default_host();
         let device = host
             .default_output_device()
@@ -279,48 +326,27 @@ impl Mixer {
         let volume_clone = self.track_volumes.clone();
 
         thread::spawn(move || {
-            // let cons = self.cons_raw.take();
             let stream = match sample_format {
                 SampleFormat::F32 => device.build_output_stream(
                     &config,
                     move |data: &mut [f32], _: &cpal::OutputCallbackInfo| {
-                        
+                        Mixer::get_audio(data, &mut cons);
+                    },
+                    err_fn,
+                    None,
+                ),
+                SampleFormat::I32 => device.build_output_stream(
+                    &config,
+                    move |data: &mut [f32], _: &cpal::OutputCallbackInfo| {
+                        Mixer::get_audio(data, &mut cons);
                     },
                     err_fn,
                     None,
                 ),
                 SampleFormat::I16 => device.build_output_stream(
                     &config,
-                    move |data: &mut [i16], _: &cpal::OutputCallbackInfo| {
-                        let channel_map_lock = channel_map_clone.lock().unwrap();
-                        let channel_map_ref = channel_map_lock.deref();
-                        let mut playback_state = playback_clone.lock().unwrap();
-                        let volume_lock = volume_clone.lock().unwrap();
-                        let volume_ref = &volume_lock.deref();
-                        Mixer::real_time_audio(
-                            data,
-                            &mut playback_state,
-                            channel_map_ref,
-                            volume_ref,
-                        );
-                    },
-                    err_fn,
-                    None,
-                ),
-                SampleFormat::U16 => device.build_output_stream(
-                    &config,
-                    move |data: &mut [u16], _: &cpal::OutputCallbackInfo| {
-                        let channel_map_lock = channel_map_clone.lock().unwrap();
-                        let channel_map_ref = channel_map_lock.deref();
-                        let mut playback_state = playback_clone.lock().unwrap();
-                        let volume_lock = volume_clone.lock().unwrap();
-                        let volume_ref = &volume_lock.deref();
-                        Mixer::real_time_audio(
-                            data,
-                            &mut playback_state,
-                            channel_map_ref,
-                            volume_ref,
-                        );
+                    move |data: &mut [f32], _: &cpal::OutputCallbackInfo| {
+                        Mixer::get_audio(data, &mut cons);
                     },
                     err_fn,
                     None,
@@ -337,13 +363,14 @@ impl Mixer {
         });
     }
 
-    fn real_time_audio<T>(
-        data: &mut [T],
+    fn real_time_audio (
+        data: &mut [f32; 512],
         playback_state: &mut PlaybackState,
         channel_map: &Vec<_Channel>,
         volumes: &HashMap<String, f64>,
-    ) where
-        T: Sample + FromSample<f32> + AddAssign + std::ops::Add, f64: FromSample<T>
+    ) 
+    // where
+    //     T: Sample + FromSample<f32> + AddAssign + std::ops::Add, f64: FromSample<T>
     {
         // TODO: Fix hardcoded 32 bar loop (currently set at 124 bpm)
         let BARS_32: usize = (32f32 * 4f32 * (60f32 / 124f32) * 48000f32).round() as usize;
@@ -377,8 +404,8 @@ impl Mixer {
             left_mix = left_mix.clamp(-1.0, 1.0);
             right_mix = right_mix.clamp(-1.0, 1.0);
 
-            out_frame[0] = T::from_sample(left_mix as f32);
-            out_frame[1] = T::from_sample(right_mix as f32);
+            out_frame[0] = left_mix as f32;
+            out_frame[1] = right_mix as f32;
 
             curr_frame += 1;
 
@@ -386,15 +413,18 @@ impl Mixer {
                 curr_frame = 0;
             }
         }
+        
         playback_state.curr_frame = curr_frame;
     }
-
-    fn get_audio<T>(data: &mut [T]) {
-        for out_frame in data.chunks(2) {
-            let left = self.cons_raw.unwrap().try_pop().unwrap();
-            let right = self.cons_raw.unwrap().try_pop().unwrap();
-            out_frame[0] = left;
-            out_frame[1] = right; 
+ 
+    fn get_audio<T>(data: &mut [T], cons: &mut impl ringbuf::traits::Consumer<Item=f32>) where
+        T: Sample + FromSample<f32> {
+        data.iter_mut().for_each(|s| *s = Sample::EQUILIBRIUM);
+        for out_frame in data.chunks_mut(2) {
+            let left = cons.try_pop().unwrap_or(0.0);
+            let right = cons.try_pop().unwrap_or(0.0);
+            out_frame[0] = T::from_sample_(left);
+            out_frame[1] = T::from_sample(right); 
         }
     }
 }
