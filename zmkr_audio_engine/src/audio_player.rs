@@ -1,16 +1,13 @@
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 use cpal::{FromSample, Sample, SampleFormat};
-use numpy::ndarray::{Array2, Array3, ArrayBase, Ix2};
+use numpy::ndarray::{Array2, Ix2};
 use numpy::PyReadonlyArray;
 use pyo3::prelude::*;
 use std::collections::HashMap;
-use std::f32::MIN;
-use std::io::SeekFrom;
-use std::ops::{Add, AddAssign, Deref};
+use std::ops::{Deref};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use std::{f32, thread};
-use rustfft::{num_complex::Complex};
 use ringbuf::{HeapProd, HeapCons, HeapRb, traits::*};
 
 use crate::phase_vocoder::PhaseVocoder;
@@ -73,7 +70,7 @@ impl Mixer {
         Ok(())
     }
 
-    /// Starts PV and begins processing audio data from ring buffer
+    /// Fills raw ring buffer (producer-mixer, consumer-pv)
     pub fn start_audio_processing(&mut self) {
         let prod_raw_arc = self.prod_raw.clone();
         let playback_clone = self.playback.clone();
@@ -242,7 +239,8 @@ impl Mixer {
 
         // PV thread
         thread::spawn(move || {
-            let mut acc_buf = vec![0.0f32; PhaseVocoder::WINDOW_SZ * 2];
+            // 8 window buffer for pv
+            let mut acc_buf = vec![0.0f32; PhaseVocoder::WINDOW_SZ * 16];
             let mut sample_count = 0;
             
             while *is_playing_clone.lock().unwrap() {
@@ -255,14 +253,14 @@ impl Mixer {
 
                 if sample_count == acc_buf.len() {
                     let mut pv = pv_clone.lock().unwrap();
-                    pv.pv_run(&acc_buf, 124);
+                    pv.pv_run(&acc_buf, 124.0);
                     while new_prod_processed.vacant_len() < pv.output_buf.len() {
                         thread::sleep(Duration::from_millis(1));
                     }
                     new_prod_processed.push_slice(&pv.output_buf);
                     sample_count = 0;
                 }
-                thread::sleep(Duration::from_millis(10));
+                thread::sleep(Duration::from_millis(5));
             }
         });
 
@@ -321,9 +319,6 @@ impl Mixer {
         let err_fn = |err| eprintln!("Error occured while trying to play: {}", err);
 
         let is_playing_clone = self.is_playing.clone();
-        let playback_clone = self.playback.clone();
-        let channel_map_clone = self.channel_map.clone();
-        let volume_clone = self.track_volumes.clone();
 
         thread::spawn(move || {
             let stream = match sample_format {
@@ -434,8 +429,6 @@ pub struct _Channel {
     pub name: String,
     pub is_playing: bool,
     pub data: Option<Arc<Array2<f64>>>,
-    pub synth_data: Option<Arc<Array2<f64>>>,
-    pub curr_frame: usize,
 }
 
 // TODO: need to reset curr_frame when new stem is loaded
@@ -445,8 +438,6 @@ impl _Channel {
             name: "None".to_string(),
             is_playing: false,
             data: None,
-            synth_data: None,
-            curr_frame: 0,
         }
     }
 

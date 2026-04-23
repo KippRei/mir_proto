@@ -13,3 +13,9 @@ PV/Stem Strategy:
 -tempo for each track will be detected but no tempo preprocessing will be done on song/stems (python)
 -stems need file path and tempo stored in data structure (python->rust dictionary)
 -Rust will handle all decoding, processing, and playing of stems
+
+
+|----|
+ |----|
+  |----|
+   |----|
