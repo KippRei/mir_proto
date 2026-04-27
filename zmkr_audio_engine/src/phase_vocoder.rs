@@ -103,6 +103,7 @@ impl PhaseVocoder {
         for i in 0..self.temp_output_buf.len() - 1 {
             self.output_buf[i] = self.temp_output_buf[i];
         }
+        // TODO: Potential bug, likely need to track temp output buf values for multiple calls to pv_run
         self.temp_output_buf.fill(0.0);
         let num_windows = orig_data.len() / (Self::WINDOW_SZ * 2);
         let stretch_factor = tempo / 124f32;

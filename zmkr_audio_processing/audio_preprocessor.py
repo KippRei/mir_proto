@@ -31,6 +31,14 @@ class AudioPreprocessor(QObject):
         _, start_beat = librosa.effects.trim(y=y, top_db=15)
         # print(f'Start beat: {start_beat}')
 
+        closest_downbeat = self.__get_downbeat(start_beat, downbeats, amt_tempo_changed)
+        if tempo_processed_folder is not None:
+            mp3_to_np.convert(tempo_processed_folder, closest_downbeat)
+
+        self.new_audio_preprocessed.emit()
+        print("Done preprocessing")
+
+    def get_downbeat(self, start_beat, downbeats, amt_tempo_changed):
         closest_downbeat = 0
         min_dist_between = float('inf')
         for idx in range(len(downbeats)):
@@ -46,9 +54,4 @@ class AudioPreprocessor(QObject):
                     closest_downbeat = round((downbeats[idx] / amt_tempo_changed) * 48000)
 
                 min_dist_between = abs(curr_dist_between)
-
-        if tempo_processed_folder is not None:
-            mp3_to_np.convert(tempo_processed_folder, closest_downbeat)
-
-        self.new_audio_preprocessed.emit()
-        print("Done preprocessing")
+        return closest_downbeat
